@@ -1,0 +1,12 @@
+/* Pie chart segments */
+.pie-segment {
+  --segment-start: 0;
+  --segment-end: 1;
+  clip-path: polygon(
+    50% 50%,
+    calc(50% + 40% * cos(calc(2 * 3.14159 * var(--segment-start))))
+      calc(50% + 40% * sin(calc(2 * 3.14159 * var(--segment-start)))),
+    calc(50% + 40% * cos(calc(2 * 3.14159 * var(--segment-end))))
+      calc(50% + 40% * sin(calc(2 * 3.14159 * var(--segment-end))))
+  );
+}
