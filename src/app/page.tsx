@@ -22,17 +22,20 @@ export default function HomePage() {
     {
       icon: BarChart3,
       title: "Portfolio Tracking",
-      description: "Monitor your DeFi investments across multiple chains",
+      description:
+        "Monitor your DeFi investments across multiple chains with real-time data and comprehensive analytics",
     },
     {
       icon: Zap,
       title: "Smart Swaps",
-      description: "Get the best rates using 1inch aggregation",
+      description:
+        "Get the best rates across all DEXs using 1inch aggregation technology for optimal token exchanges",
     },
     {
       icon: Shield,
       title: "Secure & Transparent",
-      description: "Non-custodial with full transaction transparency",
+      description:
+        "Non-custodial solution with full transaction transparency and complete control over your assets",
     },
   ];
 
@@ -97,11 +100,16 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
+            className="h-full"
           >
-            <Card className="p-6 text-center" hover gradient>
+            <Card
+              className="p-6 text-center h-full flex flex-col"
+              hover
+              gradient
+            >
               <feature.icon className="w-12 h-12 mx-auto mb-4 text-blue-600" />
               <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
+              <p className="text-gray-600 flex-1">{feature.description}</p>
             </Card>
           </motion.div>
         ))}
