@@ -26,15 +26,15 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variants = {
     primary:
-      "bg-blue-600 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl focus:ring-blue-500/50 border border-blue-600/20",
+      "bg-blue-600 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg focus:ring-blue-500/50 border border-blue-600/20",
     secondary:
-      "bg-gray-100 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-900 shadow-md hover:shadow-lg focus:ring-gray-500/40 border border-gray-200",
+      "bg-gray-100 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-900 shadow-sm hover:shadow-md focus:ring-gray-500/40 border border-gray-200",
     outline:
       "bg-white border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 focus:ring-gray-500/40 shadow-sm hover:shadow",
     ghost:
       "bg-transparent hover:bg-gray-100 text-gray-700 hover:text-gray-900 focus:ring-gray-500/30 hover:shadow-sm",
     danger:
-      "bg-red-600 bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white shadow-lg hover:shadow-xl focus:ring-red-500/50 border border-red-600/20",
+      "bg-red-600 bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white shadow-md hover:shadow-lg focus:ring-red-500/50 border border-red-600/20",
   };
 
   const sizes = {

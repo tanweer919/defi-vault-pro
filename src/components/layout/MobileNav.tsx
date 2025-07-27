@@ -32,7 +32,7 @@ export const MobileNav: React.FC = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="absolute top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50"
+            className="absolute top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-md z-50"
           >
             <div className="p-4 space-y-2">
               {navigation.map((item) => (

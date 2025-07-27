@@ -41,7 +41,7 @@ export const ActiveOrders: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+              className="p-4 bg-white rounded-lg border border-gray-200 hover:shadow-sm transition-shadow"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">

@@ -62,20 +62,35 @@ export const AssetAllocation: React.FC = () => {
         <Card className="lg:col-span-2 p-6">
           <h3 className="text-xl font-semibold mb-6">Asset Allocation</h3>
           <div className="aspect-square max-h-[400px] flex items-center justify-center">
-            {/* Placeholder for chart - you would use a charting library like recharts or chart.js here */}
-            <div className="relative w-full h-full">
-              {assetData.map((asset, index) => (
-                <div
-                  key={asset.name}
-                  className={`absolute ${asset.color} opacity-80 w-4/5 h-4/5 pie-segment`}
-                  style={
-                    {
-                      "--segment-start": `${index / assetData.length}`,
-                      "--segment-end": `${(index + 1) / assetData.length}`,
-                    } as React.CSSProperties
-                  }
-                />
-              ))}
+            {/* Simple pie chart representation */}
+            <div className="relative w-64 h-64">
+              <div className="w-full h-full rounded-full border-8 border-gray-200 relative overflow-hidden">
+                {assetData.map((asset, index) => {
+                  const startAngle = assetData
+                    .slice(0, index)
+                    .reduce(
+                      (sum, item) => sum + (item.percentage / 100) * 360,
+                      0,
+                    );
+                  const endAngle = startAngle + (asset.percentage / 100) * 360;
+
+                  return (
+                    <div
+                      key={asset.name}
+                      className={`absolute inset-0 ${asset.color} opacity-80`}
+                      style={{
+                        clipPath: `polygon(50% 50%, 50% 0%, ${
+                          50 + 50 * Math.cos((startAngle * Math.PI) / 180)
+                        }% ${
+                          50 + 50 * Math.sin((startAngle * Math.PI) / 180)
+                        }%, ${
+                          50 + 50 * Math.cos((endAngle * Math.PI) / 180)
+                        }% ${50 + 50 * Math.sin((endAngle * Math.PI) / 180)}%)`,
+                      }}
+                    />
+                  );
+                })}
+              </div>
             </div>
           </div>
         </Card>

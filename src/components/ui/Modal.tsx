@@ -54,7 +54,7 @@ export const Modal: React.FC<ModalProps> = ({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className={`relative w-full ${sizeClasses[size]} bg-white rounded-lg shadow-lg`}
+            className={`relative w-full ${sizeClasses[size]} bg-white rounded-lg shadow-md`}
           >
             <div className="flex items-center justify-between p-6 border-b">
               <h2 className="text-lg font-semibold">{title}</h2>

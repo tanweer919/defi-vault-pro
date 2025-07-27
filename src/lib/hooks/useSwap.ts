@@ -26,7 +26,7 @@ export const useSwap = ({
       if (!fromToken || !toToken || !amount || !chainId) return null;
 
       return await oneInchApi.getSwapQuote({
-        chainId: chainId as ChainId, // Type assertion to bypass type error
+        chainId: chainId as ChainId,
         src: fromToken,
         dst: toToken,
         amount,

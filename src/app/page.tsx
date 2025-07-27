@@ -5,10 +5,19 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PortfolioDashboard } from "@/components/features/PortfolioDashboard";
-import { TrendingUp, Zap, Shield, BarChart3 } from "lucide-react";
+import { useWalletState } from "@/lib/hooks/useWalletState";
+import { useDemoMode } from "@/lib/hooks/useDemoMode";
+import { TrendingUp, Zap, Shield, BarChart3, Wallet, Eye } from "lucide-react";
 import Link from "next/link";
 
 export default function HomePage() {
+  const { isConnected } = useWalletState();
+  const { isDemoMode, enableDemoMode, isDemoAvailable } = useDemoMode();
+
+  const handleEnableDemo = () => {
+    enableDemoMode();
+  };
+
   const features = [
     {
       icon: BarChart3,
@@ -47,18 +56,36 @@ export default function HomePage() {
           powered by 1inch APIs
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/portfolio">
+          {isConnected || isDemoMode ? (
+            <Link href="/portfolio">
+              <Button size="lg" className="px-8">
+                <BarChart3 className="w-5 h-5 mr-2" />
+                View Portfolio
+              </Button>
+            </Link>
+          ) : (
             <Button size="lg" className="px-8">
-              <BarChart3 className="w-5 h-5 mr-2" />
-              View Portfolio
+              <Wallet className="w-5 h-5 mr-2" />
+              Connect Wallet
             </Button>
-          </Link>
+          )}
           <Link href="/swap">
             <Button variant="outline" size="lg" className="px-8">
               <Zap className="w-5 h-5 mr-2" />
               Start Swapping
             </Button>
           </Link>
+          {!isConnected && !isDemoMode && isDemoAvailable && (
+            <Button
+              variant="secondary"
+              size="lg"
+              className="px-8"
+              onClick={handleEnableDemo}
+            >
+              <Eye className="w-5 h-5 mr-2" />
+              Try Demo
+            </Button>
+          )}
         </div>
       </motion.section>
 
@@ -80,8 +107,8 @@ export default function HomePage() {
         ))}
       </section>
 
-      {/* Portfolio Preview */}
-      <PortfolioDashboard />
+      {/* Portfolio Preview - Show if wallet is connected OR demo mode is enabled */}
+      {(isConnected || isDemoMode) && <PortfolioDashboard />}
     </div>
   );
 }

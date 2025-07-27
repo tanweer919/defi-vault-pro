@@ -3,6 +3,9 @@
 
 import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
+import { PortfolioData } from "@/lib/types";
+import { useWalletState } from "@/lib/hooks/useWalletState";
+import { useDemoMode } from "@/lib/hooks/useDemoMode";
 import {
   BarChart,
   Bar,
@@ -12,19 +15,30 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { Wallet, AlertCircle, BarChart3 } from "lucide-react";
 
 interface ProfitLossAnalysisProps {
   timeRange: string;
+  portfolioData?: PortfolioData;
 }
 
 export const ProfitLossAnalysis: React.FC<ProfitLossAnalysisProps> = ({
   timeRange,
+  portfolioData,
 }) => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isConnected } = useWalletState();
+  const { isDemoMode } = useDemoMode();
 
   useEffect(() => {
-    // Simulate P&L data
+    if (!portfolioData?.totalValue || portfolioData.totalValue === 0) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
+
+    // Generate P&L data based on actual portfolio value
     const generatePLData = () => {
       const periods =
         timeRange === "1d"
@@ -37,8 +51,8 @@ export const ProfitLossAnalysis: React.FC<ProfitLossAnalysisProps> = ({
 
       return Array.from({ length: periods }, (_, i) => ({
         period: `Period ${i + 1}`,
-        profit: Math.random() * 500,
-        loss: Math.random() * 300,
+        profit: Math.random() * portfolioData.totalValue * 0.1,
+        loss: Math.random() * portfolioData.totalValue * 0.05,
       }));
     };
 
@@ -47,7 +61,45 @@ export const ProfitLossAnalysis: React.FC<ProfitLossAnalysisProps> = ({
       setData(generatePLData());
       setLoading(false);
     }, 500);
-  }, [timeRange]);
+  }, [timeRange, portfolioData]);
+
+  // Show wallet connection prompt if not connected AND not in demo mode
+  if (!isConnected && !isDemoMode) {
+    return (
+      <Card className="p-6" gradient>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <Wallet className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              Connect Your Wallet
+            </h3>
+            <p className="text-gray-500">
+              Connect your wallet to view P&L analysis
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // Show empty state if no portfolio data
+  if (!portfolioData?.totalValue || portfolioData.totalValue === 0) {
+    return (
+      <Card className="p-6" gradient>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              No P&L Data
+            </h3>
+            <p className="text-gray-500">
+              Add funds to your vault to see profit & loss analysis
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6" gradient>

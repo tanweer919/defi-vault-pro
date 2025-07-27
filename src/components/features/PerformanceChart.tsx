@@ -3,6 +3,9 @@
 
 import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
+import { PortfolioData } from "@/lib/types";
+import { useWalletState } from "@/lib/hooks/useWalletState";
+import { useDemoMode } from "@/lib/hooks/useDemoMode";
 import {
   LineChart,
   Line,
@@ -13,19 +16,30 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { Wallet, AlertCircle, BarChart3 } from "lucide-react";
 
 interface PerformanceChartProps {
   timeRange: string;
+  portfolioData?: PortfolioData;
 }
 
 export const PerformanceChart: React.FC<PerformanceChartProps> = ({
   timeRange,
+  portfolioData,
 }) => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isConnected } = useWalletState();
+  const { isDemoMode } = useDemoMode();
 
   useEffect(() => {
-    // Simulate API call for performance data
+    if (!portfolioData?.totalValue || portfolioData.totalValue === 0) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
+
+    // Generate performance data based on actual portfolio value
     const generateData = () => {
       const days =
         timeRange === "1d"
@@ -36,15 +50,21 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
           ? 30
           : 90;
       const points = timeRange === "1d" ? 24 : days;
+      const baseValue = portfolioData.totalValue;
 
       return Array.from({ length: points }, (_, i) => {
         const date = new Date();
         date.setDate(date.getDate() - (points - i - 1));
 
+        // Enhanced variation for demo mode
+        const variation = isDemoMode
+          ? (Math.random() - 0.5) * 0.15 + (i / points) * 0.08 // Trending upward in demo
+          : (Math.random() - 0.5) * 0.1;
+
         return {
           date: date.toISOString().split("T")[0],
-          value: 10000 + Math.random() * 5000,
-          pnl: (Math.random() - 0.5) * 1000,
+          value: baseValue + baseValue * variation,
+          pnl: baseValue * variation,
         };
       });
     };
@@ -54,7 +74,45 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
       setData(generateData());
       setLoading(false);
     }, 500);
-  }, [timeRange]);
+  }, [timeRange, portfolioData, isDemoMode]);
+
+  // Show wallet connection prompt if not connected AND not in demo mode
+  if (!isConnected && !isDemoMode) {
+    return (
+      <Card className="p-6" gradient>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <Wallet className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              Connect Your Wallet
+            </h3>
+            <p className="text-gray-500">
+              Connect your wallet to view performance data
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // Show empty state if no portfolio data
+  if (!portfolioData?.totalValue || portfolioData.totalValue === 0) {
+    return (
+      <Card className="p-6" gradient>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              No Performance Data
+            </h3>
+            <p className="text-gray-500">
+              Add funds to your vault to see performance charts
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6" gradient>

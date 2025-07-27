@@ -5,6 +5,8 @@ import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PortfolioData } from "@/lib/types";
+import { useWalletState } from "@/lib/hooks/useWalletState";
+import { useDemoMode } from "@/lib/hooks/useDemoMode";
 import {
   LineChart,
   Line,
@@ -18,23 +20,35 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { Wallet, AlertCircle, BarChart3 } from "lucide-react";
 
 interface PortfolioChartsProps {
   portfolioData: PortfolioData | undefined;
   timeframe: string;
+  isLoading?: boolean;
+  error?: Error | null;
 }
 
 export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({
   portfolioData,
   timeframe,
+  isLoading = false,
+  error = null,
 }) => {
   const [chartType, setChartType] = useState<"performance" | "allocation">(
     "performance",
   );
   const [performanceData, setPerformanceData] = useState<any[]>([]);
+  const { isConnected } = useWalletState();
+  const { isDemoMode } = useDemoMode();
 
   useEffect(() => {
-    // Generate performance data based on timeframe
+    if (!portfolioData?.totalValue || portfolioData.totalValue === 0) {
+      setPerformanceData([]);
+      return;
+    }
+
+    // Generate performance data based on actual portfolio value
     const generatePerformanceData = () => {
       const points =
         timeframe === "1h"
@@ -44,7 +58,7 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({
           : timeframe === "7d"
           ? 7
           : 30;
-      const baseValue = portfolioData?.totalValue || 10000;
+      const baseValue = portfolioData.totalValue;
 
       return Array.from({ length: points }, (_, i) => {
         const date = new Date();
@@ -58,7 +72,10 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({
           date.setDate(date.getDate() - (points - i - 1));
         }
 
-        const variation = (Math.random() - 0.5) * 0.1;
+        // Enhanced variation for demo mode
+        const variation = isDemoMode
+          ? (Math.random() - 0.5) * 0.15 + (i / points) * 0.1 // Trending upward in demo
+          : (Math.random() - 0.5) * 0.1;
         const value = baseValue * (1 + variation);
 
         return {
@@ -71,7 +88,7 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({
     };
 
     setPerformanceData(generatePerformanceData());
-  }, [timeframe, portfolioData]);
+  }, [timeframe, portfolioData, isDemoMode]);
 
   const COLORS = [
     "#3B82F6",
@@ -83,14 +100,159 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({
   ];
 
   const allocationData =
-    portfolioData?.items?.map((item, index) => ({
-      name: item.symbol,
-      value: item.value,
-      percentage: (
-        (item.value / (portfolioData?.totalValue || 1)) *
-        100
-      ).toFixed(1),
-    })) || [];
+    portfolioData?.items
+      ?.filter((item) => item.value > 0)
+      ?.map((item, index) => ({
+        name: item.symbol,
+        value: item.value,
+        percentage: (
+          (item.value / (portfolioData?.totalValue || 1)) *
+          100
+        ).toFixed(1),
+      })) || [];
+
+  // Show wallet connection prompt if not connected AND not in demo mode
+  if (!isConnected && !isDemoMode) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-6" gradient>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Wallet className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                Connect Your Wallet
+              </h3>
+              <p className="text-gray-500">
+                Connect your wallet to view portfolio charts
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6" gradient>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                No Data Available
+              </h3>
+              <p className="text-gray-500">
+                Connect your wallet to see market insights
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-6" gradient>
+          <div className="animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
+        </Card>
+
+        <Card className="p-6" gradient>
+          <div className="animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-32 mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-6" gradient>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-red-600 mb-2">
+                Error Loading Data
+              </h3>
+              <p className="text-gray-500">
+                Failed to load portfolio performance data
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6" gradient>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-red-600 mb-2">
+                Error Loading Data
+              </h3>
+              <p className="text-gray-500">
+                Failed to load market overview data
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show empty state if no portfolio data
+  if (!portfolioData?.totalValue || portfolioData.totalValue === 0) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-6" gradient>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                No Portfolio Data
+              </h3>
+              <p className="text-gray-500">
+                Add funds to your vault to see performance charts
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6" gradient>
+          <h3 className="text-lg font-semibold mb-4">Market Overview</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Total Market Cap</span>
+              <span className="font-semibold">$2.1T</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">24h Volume</span>
+              <span className="font-semibold">$89.2B</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">DeFi TVL</span>
+              <span className="font-semibold">$45.7B</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Fear & Greed Index</span>
+              <span className="font-semibold text-green-600">Greedy (76)</span>
+            </div>
+          </div>
+
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h4 className="font-semibold text-blue-900 mb-2">💡 Get Started</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Connect your wallet to start tracking your portfolio</li>
+              <li>• Add funds to your vault to see performance data</li>
+              <li>• Monitor your DeFi investments in real-time</li>
+            </ul>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -204,11 +366,19 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({
           </h4>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>
-              • Your portfolio is well-diversified across{" "}
-              {portfolioData?.items.length} assets
+              • Your portfolio contains {portfolioData?.items.length} assets
             </li>
-            <li>• Consider rebalancing - ETH allocation is above 40%</li>
-            <li>• Strong performance this week with +12.4% gains</li>
+            <li>
+              • Total portfolio value: $
+              {portfolioData?.totalValue.toLocaleString()}
+            </li>
+            {isDemoMode && (
+              <>
+                <li>• Strong performance this week with +12.4% gains</li>
+                <li>• Well-diversified across major cryptocurrencies</li>
+              </>
+            )}
+            <li>• Monitor your performance over time</li>
           </ul>
         </div>
       </Card>

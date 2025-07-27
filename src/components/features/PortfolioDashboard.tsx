@@ -10,6 +10,8 @@ import { AssetTable } from "@/components/features/AssetTable";
 import { PortfolioCharts } from "@/components/features/PortfolioCharts";
 import { RecentActivity } from "@/components/features/RecentActivity";
 import { QuickActions } from "@/components/features/QuickActions";
+import { useWalletState } from "@/lib/hooks/useWalletState";
+import { useDemoMode } from "@/lib/hooks/useDemoMode";
 import {
   Search,
   Grid,
@@ -20,68 +22,86 @@ import {
   Coins,
   Target,
   Activity,
+  Wallet,
+  Eye,
 } from "lucide-react";
 
 interface PortfolioDashboardProps {
-  sortBy: string;
-  filterBy: string;
-  viewMode: "grid" | "list";
+  sortBy?: string;
+  filterBy?: string;
+  viewMode?: "grid" | "list";
 }
 
 export const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({
-  sortBy,
-  filterBy,
-  viewMode,
+  sortBy = "value",
+  filterBy = "all",
+  viewMode = "grid",
 }) => {
-  const { portfolioData, isLoading, error, refetch } = usePortfolio();
+  const { portfolioData, isLoading, error, refetch, isDemoMode } =
+    usePortfolio();
+  const { isConnected } = useWalletState();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTimeframe, setSelectedTimeframe] = useState("24h");
+  const { enableDemoMode, isDemoAvailable } = useDemoMode();
 
-  if (isLoading) {
+  const handleEnableDemo = () => {
+    enableDemoMode();
+  };
+
+  // Show wallet connection prompt if not connected and not in demo mode
+  if (!isConnected && !isDemoMode) {
     return (
       <div className="space-y-6">
-        {/* Loading skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="p-6 animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-              <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-            </Card>
-          ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="p-6 animate-pulse">
-            <div className="h-64 bg-gray-200 rounded"></div>
-          </Card>
-          <Card className="p-6 animate-pulse">
-            <div className="h-64 bg-gray-200 rounded"></div>
-          </Card>
-        </div>
+        <Card className="p-12 text-center">
+          <Wallet className="w-16 h-16 text-gray-400 mx-auto mb-6" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Connect Your Wallet
+          </h2>
+          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            Connect your wallet to view your DeFi portfolio, track performance,
+            and manage your assets.
+          </p>
+          <div className="flex justify-center space-x-4">
+            <Button size="lg">
+              <Wallet className="w-5 h-5 mr-2" />
+              Connect Wallet
+            </Button>
+            {isDemoAvailable && (
+              <Button variant="secondary" size="lg" onClick={handleEnableDemo}>
+                <Eye className="w-5 h-5 mr-2" />
+                Try Demo
+              </Button>
+            )}
+          </div>
+        </Card>
       </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="p-8 text-center">
-        <div className="text-red-600 mb-4">
-          <TrendingDown className="w-12 h-12 mx-auto mb-2" />
-          <p className="text-lg font-semibold">Failed to load portfolio</p>
-          <p className="text-sm">Please check your connection and try again</p>
-        </div>
-        <Button onClick={() => refetch()} variant="outline">
-          Try Again
-        </Button>
-      </Card>
     );
   }
 
   return (
     <div className="space-y-6">
+      {/* Demo Mode Indicator (local to dashboard) */}
+      {isDemoMode && (
+        <Card className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200">
+          <div className="flex items-center space-x-3">
+            <Eye className="w-5 h-5 text-orange-600" />
+            <div>
+              <h3 className="font-semibold text-orange-800">Demo Portfolio</h3>
+              <p className="text-sm text-orange-700">
+                This is sample data showcasing the platform&apos;s features.
+                Connect your wallet to see real data.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Portfolio Stats */}
       <PortfolioStats
         portfolioData={portfolioData}
         timeframe={selectedTimeframe}
+        isLoading={isLoading}
+        error={error}
       />
 
       {/* Search and Filters */}
@@ -117,6 +137,8 @@ export const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({
       <PortfolioCharts
         portfolioData={portfolioData}
         timeframe={selectedTimeframe}
+        isLoading={isLoading}
+        error={error}
       />
 
       {/* Main Content Grid */}

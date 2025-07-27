@@ -1,12 +1,21 @@
 import { useAccount, useChainId } from "wagmi";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import oneInchApi from "../api/oneInchApi";
 import { PortfolioData, TokenBalance } from "../types";
 import { ChainId } from "../config/wagmi";
+import { useDemoMode } from "./useDemoMode";
 
 export const usePortfolio = () => {
   const { address } = useAccount();
   const chainId = useChainId();
+  const { isDemoMode, getDemoPortfolioData } = useDemoMode();
+  const queryClient = useQueryClient();
+
+  // Invalidate query when demo mode changes
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["portfolio"] });
+  }, [isDemoMode, queryClient]);
 
   const {
     data: portfolioData,
@@ -14,8 +23,13 @@ export const usePortfolio = () => {
     error,
     refetch,
   } = useQuery<PortfolioData>({
-    queryKey: ["portfolio", address, chainId],
+    queryKey: ["portfolio", address, chainId, isDemoMode],
     queryFn: async () => {
+      // If demo mode is enabled, return demo data
+      if (isDemoMode) {
+        return getDemoPortfolioData();
+      }
+
       if (!address || !chainId) throw new Error("Wallet not connected");
 
       // Fetch balances
@@ -24,8 +38,8 @@ export const usePortfolio = () => {
         address,
       );
 
-      // Get token addresses
-      const tokenAddresses = Object.keys(balances);
+      // Get token addresses - only track ETH for now
+      const tokenAddresses = ["0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"];
 
       // Fetch prices
       const prices = await oneInchApi.getTokenPrices(
@@ -37,7 +51,7 @@ export const usePortfolio = () => {
       const items: TokenBalance[] = await Promise.all(
         tokenAddresses.map(async (tokenAddress) => {
           const balance = balances[tokenAddress];
-          const price = prices[tokenAddress] || 0;
+          const price = Number(prices[tokenAddress]) || 0;
 
           try {
             const tokenInfo = await oneInchApi.getTokenMetadata(
@@ -46,20 +60,20 @@ export const usePortfolio = () => {
             );
             return {
               address: tokenAddress,
-              symbol: tokenInfo.symbol,
-              name: tokenInfo.name,
+              symbol: tokenInfo.assets.symbol,
+              name: tokenInfo.assets.name,
               balance: balance,
-              decimals: tokenInfo.decimals,
+              decimals: tokenInfo.assets.decimals,
               price: price,
               value: parseFloat(balance) * price,
-              logo: tokenInfo.logoURI,
+              logo: tokenInfo.assets.logoURI,
             };
           } catch (error) {
-            // Fallback for tokens without metadata
+            // Fallback for ETH (native token)
             return {
               address: tokenAddress,
-              symbol: "Unknown",
-              name: "Unknown Token",
+              symbol: "ETH",
+              name: "Ethereum",
               balance: balance,
               decimals: 18,
               price: price,
@@ -79,8 +93,9 @@ export const usePortfolio = () => {
         chainId,
       };
     },
-    enabled: !!address && !!chainId,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    enabled: isDemoMode || (!!address && !!chainId),
+    refetchInterval: isDemoMode ? false : 30000, // Don't refetch in demo mode
+    staleTime: isDemoMode ? 0 : 5 * 60 * 1000, // Demo data is immediately stale
   });
 
   return {
@@ -88,5 +103,6 @@ export const usePortfolio = () => {
     isLoading,
     error,
     refetch,
+    isDemoMode,
   };
 };

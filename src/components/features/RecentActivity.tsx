@@ -74,7 +74,7 @@ export const RecentActivity: React.FC = () => {
           return (
             <div
               key={activity.id}
-              className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200 hover:shadow-sm transition-shadow"
+              className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200 hover:shadow transition-shadow"
             >
               <div
                 className={`p-2 rounded-full ${getActivityColor(

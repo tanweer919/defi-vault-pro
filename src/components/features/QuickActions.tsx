@@ -49,7 +49,7 @@ export const QuickActions: React.FC = () => {
           <Link key={index} href={action.href}>
             <Button
               variant="outline"
-              className="w-full h-auto p-4 flex flex-col items-center space-y-2 hover:shadow-md transition-shadow"
+              className="w-full h-auto p-4 flex flex-col items-center space-y-2 hover:shadow-sm transition-shadow"
             >
               <div className={`p-2 rounded-full ${action.color}`}>
                 <action.icon className="w-4 h-4" />

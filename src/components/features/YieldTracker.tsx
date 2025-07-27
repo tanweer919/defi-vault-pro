@@ -5,7 +5,17 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { Coins, TrendingUp, Calendar, Star } from "lucide-react";
+import { PortfolioData } from "@/lib/types";
+import { useWalletState } from "@/lib/hooks/useWalletState";
+import { useDemoMode } from "@/lib/hooks/useDemoMode";
+import {
+  Coins,
+  TrendingUp,
+  Calendar,
+  Star,
+  Wallet,
+  AlertCircle,
+} from "lucide-react";
 
 interface YieldPool {
   id: string;
@@ -20,12 +30,26 @@ interface YieldPool {
   risk: "low" | "medium" | "high";
 }
 
-export const YieldTracker: React.FC = () => {
+interface YieldTrackerProps {
+  portfolioData?: PortfolioData;
+}
+
+export const YieldTracker: React.FC<YieldTrackerProps> = ({
+  portfolioData,
+}) => {
   const [pools, setPools] = useState<YieldPool[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isConnected } = useWalletState();
+  const { isDemoMode } = useDemoMode();
 
   useEffect(() => {
-    // Simulate API call
+    if (!portfolioData?.totalValue || portfolioData.totalValue === 0) {
+      setPools([]);
+      setLoading(false);
+      return;
+    }
+
+    // Simulate API call with real portfolio data
     setTimeout(() => {
       setPools([
         {
@@ -35,8 +59,8 @@ export const YieldTracker: React.FC = () => {
           apy: 12.4,
           tvl: 2340000,
           rewards: ["UNI", "USDC"],
-          deposited: 5000,
-          earned: 183.5,
+          deposited: portfolioData.totalValue * 0.3, // 30% of portfolio
+          earned: portfolioData.totalValue * 0.01, // 1% earned
           logo: "/logos/uniswap.png",
           risk: "medium",
         },
@@ -47,8 +71,8 @@ export const YieldTracker: React.FC = () => {
           apy: 4.2,
           tvl: 8900000,
           rewards: ["COMP"],
-          deposited: 10000,
-          earned: 420,
+          deposited: portfolioData.totalValue * 0.5, // 50% of portfolio
+          earned: portfolioData.totalValue * 0.005, // 0.5% earned
           logo: "/logos/compound.png",
           risk: "low",
         },
@@ -59,15 +83,15 @@ export const YieldTracker: React.FC = () => {
           apy: 1.8,
           tvl: 15600000,
           rewards: ["AAVE"],
-          deposited: 3000,
-          earned: 54,
+          deposited: portfolioData.totalValue * 0.2, // 20% of portfolio
+          earned: portfolioData.totalValue * 0.002, // 0.2% earned
           logo: "/logos/aave.png",
           risk: "low",
         },
       ]);
       setLoading(false);
     }, 1000);
-  }, []);
+  }, [portfolioData]);
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
@@ -82,9 +106,50 @@ export const YieldTracker: React.FC = () => {
     }
   };
 
+  // Show wallet connection prompt if not connected AND not in demo mode
+  if (!isConnected && !isDemoMode) {
+    return (
+      <Card className="p-6" gradient>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <Wallet className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              Connect Your Wallet
+            </h3>
+            <p className="text-gray-500">
+              Connect your wallet to view yield farming data
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // Show empty state if no portfolio data
+  if (!portfolioData?.totalValue || portfolioData.totalValue === 0) {
+    return (
+      <Card className="p-6" gradient>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <Coins className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              No Yield Data
+            </h3>
+            <p className="text-gray-500">
+              Add funds to your vault to see yield farming opportunities
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   const totalDeposited = pools.reduce((sum, pool) => sum + pool.deposited, 0);
   const totalEarned = pools.reduce((sum, pool) => sum + pool.earned, 0);
-  const avgApy = pools.reduce((sum, pool) => sum + pool.apy, 0) / pools.length;
+  const avgApy =
+    pools.length > 0
+      ? pools.reduce((sum, pool) => sum + pool.apy, 0) / pools.length
+      : 0;
 
   return (
     <Card className="p-6" gradient>
@@ -131,7 +196,7 @@ export const YieldTracker: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+              className="p-4 bg-white rounded-lg border border-gray-200 hover:shadow-sm transition-shadow"
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3">
