@@ -4,7 +4,8 @@
 export const DEMO_CONFIG = {
   isDemoAllowed: process.env.NEXT_PUBLIC_IS_DEMO_ALLOWED === "true", // Change this to false to disable demo functionality
   // Demo data configuration
-  showDemoInProduction: process.env.NEXT_PUBLIC_SHOW_DEMO_IN_PRODUCTION === "true", // Set to true if you want demo in production
+  showDemoInProduction:
+    process.env.NEXT_PUBLIC_SHOW_DEMO_IN_PRODUCTION === "true", // Set to true if you want demo in production
 
   // Environment-based demo availability
   get isAvailable() {

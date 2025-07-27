@@ -11,6 +11,7 @@ import { RiskAnalysis } from "@/components/features/RiskAnalysis";
 import { useWalletState } from "@/lib/hooks/useWalletState";
 import { usePortfolio } from "@/lib/hooks/usePortfolio";
 import { useDemoMode } from "@/lib/hooks/useDemoMode";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import {
   TrendingUp,
   PieChart,
@@ -26,9 +27,16 @@ export default function AnalyticsPage() {
   const { isConnected } = useWalletState();
   const { portfolioData, isLoading, error, isDemoMode } = usePortfolio();
   const { enableDemoMode, isDemoAvailable } = useDemoMode();
+  const { openConnectModal } = useConnectModal();
 
   const handleEnableDemo = () => {
     enableDemoMode();
+  };
+
+  const handleConnectWallet = () => {
+    if (openConnectModal) {
+      openConnectModal();
+    }
   };
 
   const timeRanges = [
@@ -64,7 +72,7 @@ export default function AnalyticsPage() {
             and insights about your DeFi portfolio.
           </p>
           <div className="flex justify-center space-x-4">
-            <Button size="lg">
+            <Button size="lg" onClick={handleConnectWallet}>
               <Wallet className="w-5 h-5 mr-2" />
               Connect Wallet
             </Button>

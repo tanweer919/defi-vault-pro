@@ -5,9 +5,61 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { ArrowUpDown, Settings, Target } from "lucide-react";
+import { ArrowUpDown, Settings, Target, AlertCircle } from "lucide-react";
 import { useLimitOrders } from "@/lib/hooks/useLimitOrders";
+import { useWalletState } from "@/lib/hooks/useWalletState";
+import { useDemoMode } from "@/lib/hooks/useDemoMode";
 import toast from "react-hot-toast";
+
+// Common tokens with proper addresses (same as SwapInterface)
+const TOKENS = {
+  1: [
+    // Ethereum
+    {
+      address: "0x0000000000000000000000000000000000000000",
+      symbol: "ETH",
+      name: "Ethereum",
+    },
+    {
+      address: "0xA0b86a33E6441E5BA2AD8D73B8E76C6B72C2E6eF",
+      symbol: "USDC",
+      name: "USD Coin",
+    },
+    {
+      address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      symbol: "USDT",
+      name: "Tether USD",
+    },
+    {
+      address: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+      symbol: "DAI",
+      name: "Dai Stablecoin",
+    },
+    {
+      address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      symbol: "WBTC",
+      name: "Wrapped Bitcoin",
+    },
+  ],
+  137: [
+    // Polygon
+    {
+      address: "0x0000000000000000000000000000000000000000",
+      symbol: "MATIC",
+      name: "Polygon",
+    },
+    {
+      address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+      symbol: "USDC",
+      name: "USD Coin",
+    },
+    {
+      address: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+      symbol: "USDT",
+      name: "Tether USD",
+    },
+  ],
+};
 
 export const LimitOrderInterface: React.FC = () => {
   const [sellToken, setSellToken] = useState("");
@@ -17,25 +69,65 @@ export const LimitOrderInterface: React.FC = () => {
   const [orderType, setOrderType] = useState<"buy" | "sell">("buy");
   const [expiry, setExpiry] = useState("");
 
+  const { isConnected, chainId } = useWalletState();
+  const { isDemoMode } = useDemoMode();
   const { createLimitOrder, isLoading } = useLimitOrders();
 
+  const availableTokens = TOKENS[chainId as keyof typeof TOKENS] || TOKENS[1];
+
   const handleCreateOrder = async () => {
+    if (!isConnected && !isDemoMode) {
+      toast.error("Please connect your wallet or enable demo mode");
+      return;
+    }
+
+    if (!sellToken || !buyToken || !sellAmount || !buyAmount || !expiry) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
     try {
-      await createLimitOrder({
-        sellToken,
-        buyToken,
-        sellAmount,
-        buyAmount,
-        expiry: new Date(expiry).getTime() / 1000,
-      });
-      toast.success("Limit order created successfully!");
+      if (isDemoMode) {
+        // Simulate order creation in demo mode
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        toast.success("Demo limit order created successfully!");
+      } else {
+        await createLimitOrder({
+          sellToken,
+          buyToken,
+          sellAmount,
+          buyAmount,
+          expiry: new Date(expiry).getTime() / 1000,
+        });
+        toast.success("Limit order created successfully!");
+      }
+
       // Reset form
       setSellAmount("");
       setBuyAmount("");
+      setExpiry("");
     } catch (error) {
+      console.error("Order creation error:", error);
       toast.error("Failed to create limit order");
     }
   };
+
+  const swapTokens = () => {
+    const tempToken = sellToken;
+    const tempAmount = sellAmount;
+    setSellToken(buyToken);
+    setBuyToken(tempToken);
+    setSellAmount(buyAmount);
+    setBuyAmount(tempAmount);
+  };
+
+  const isOrderDisabled =
+    !sellToken ||
+    !buyToken ||
+    !sellAmount ||
+    !buyAmount ||
+    !expiry ||
+    isLoading;
 
   return (
     <Card className="p-6" gradient>
@@ -45,6 +137,18 @@ export const LimitOrderInterface: React.FC = () => {
           <Settings className="w-4 h-4" />
         </Button>
       </div>
+
+      {/* Connection Status */}
+      {!isConnected && !isDemoMode && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 text-yellow-600" />
+            <p className="text-sm text-yellow-800">
+              Connect your wallet or enable demo mode to create limit orders
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-4">
         {/* Order Type Toggle */}
@@ -76,24 +180,20 @@ export const LimitOrderInterface: React.FC = () => {
               placeholder="0.0"
               value={sellAmount}
               onChange={(e) => setSellAmount(e.target.value)}
-              className="text-right"
+              className="text-right pr-3 pl-28"
             />
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
               <select
                 value={sellToken}
                 onChange={(e) => setSellToken(e.target.value)}
-                className="border-none bg-transparent focus:outline-none"
+                className="border-none bg-transparent focus:outline-none text-sm font-medium w-20"
               >
-                <option value="">Select token</option>
-                <option value="0xA0b86a33E6441E5BA2AD8D73B8E76C6B72C2E6eF">
-                  ETH
-                </option>
-                <option value="0xA0b86a33E6441E5BA2AD8D73B8E76C6B72C2E6eF">
-                  USDC
-                </option>
-                <option value="0xA0b86a33E6441E5BA2AD8D73B8E76C6B72C2E6eF">
-                  WBTC
-                </option>
+                <option value="">Select</option>
+                {availableTokens.map((token) => (
+                  <option key={token.address} value={token.address}>
+                    {token.symbol}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -104,12 +204,7 @@ export const LimitOrderInterface: React.FC = () => {
           <motion.button
             whileHover={{ rotate: 180 }}
             className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
-            onClick={() => {
-              setSellToken(buyToken);
-              setBuyToken(sellToken);
-              setSellAmount(buyAmount);
-              setBuyAmount(sellAmount);
-            }}
+            onClick={swapTokens}
           >
             <ArrowUpDown className="w-4 h-4" />
           </motion.button>
@@ -126,24 +221,20 @@ export const LimitOrderInterface: React.FC = () => {
               placeholder="0.0"
               value={buyAmount}
               onChange={(e) => setBuyAmount(e.target.value)}
-              className="text-right"
+              className="text-right pr-3 pl-28"
             />
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
               <select
                 value={buyToken}
                 onChange={(e) => setBuyToken(e.target.value)}
-                className="border-none bg-transparent focus:outline-none"
+                className="border-none bg-transparent focus:outline-none text-sm font-medium w-20"
               >
-                <option value="">Select token</option>
-                <option value="0xA0b86a33E6441E5BA2AD8D73B8E76C6B72C2E6eF">
-                  ETH
-                </option>
-                <option value="0xA0b86a33E6441E5BA2AD8D73B8E76C6B72C2E6eF">
-                  USDC
-                </option>
-                <option value="0xA0b86a33E6441E5BA2AD8D73B8E76C6B72C2E6eF">
-                  WBTC
-                </option>
+                <option value="">Select</option>
+                {availableTokens.map((token) => (
+                  <option key={token.address} value={token.address}>
+                    {token.symbol}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -163,7 +254,7 @@ export const LimitOrderInterface: React.FC = () => {
         </div>
 
         {/* Order Summary */}
-        {sellAmount && buyAmount && (
+        {sellAmount && buyAmount && sellToken && buyToken && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -177,15 +268,29 @@ export const LimitOrderInterface: React.FC = () => {
               <span>Price</span>
               <span>
                 {(parseFloat(sellAmount) / parseFloat(buyAmount)).toFixed(6)}{" "}
-                {sellToken}/{buyToken}
+                {availableTokens.find((t) => t.address === sellToken)?.symbol}/
+                {availableTokens.find((t) => t.address === buyToken)?.symbol}
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Total</span>
               <span>
-                {buyAmount} {buyToken}
+                {buyAmount}{" "}
+                {availableTokens.find((t) => t.address === buyToken)?.symbol}
               </span>
             </div>
+            <div className="flex justify-between text-sm">
+              <span>Expires</span>
+              <span>
+                {expiry ? new Date(expiry).toLocaleDateString() : "Not set"}
+              </span>
+            </div>
+            {isDemoMode && (
+              <div className="flex justify-between text-sm text-orange-600">
+                <span>Mode</span>
+                <span>Demo</span>
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -193,14 +298,12 @@ export const LimitOrderInterface: React.FC = () => {
         <Button
           onClick={handleCreateOrder}
           loading={isLoading}
-          disabled={
-            !sellToken || !buyToken || !sellAmount || !buyAmount || !expiry
-          }
+          disabled={isOrderDisabled}
           className="w-full"
           size="lg"
         >
           <Target className="w-4 h-4 mr-2" />
-          Create Limit Order
+          {isDemoMode ? "Create Demo Order" : "Create Limit Order"}
         </Button>
       </div>
     </Card>

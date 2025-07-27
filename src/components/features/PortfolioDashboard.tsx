@@ -14,17 +14,10 @@ import { useWalletState } from "@/lib/hooks/useWalletState";
 import { useDemoMode } from "@/lib/hooks/useDemoMode";
 import {
   Search,
-  Grid,
-  List,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Coins,
-  Target,
-  Activity,
   Wallet,
   Eye,
 } from "lucide-react";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 interface PortfolioDashboardProps {
   sortBy?: string;
@@ -43,9 +36,16 @@ export const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTimeframe, setSelectedTimeframe] = useState("24h");
   const { enableDemoMode, isDemoAvailable } = useDemoMode();
+  const { openConnectModal } = useConnectModal();
 
   const handleEnableDemo = () => {
     enableDemoMode();
+  };
+
+  const handleConnectWallet = () => {
+    if (openConnectModal) {
+      openConnectModal();
+    }
   };
 
   // Show wallet connection prompt if not connected and not in demo mode
@@ -62,7 +62,7 @@ export const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({
             and manage your assets.
           </p>
           <div className="flex justify-center space-x-4">
-            <Button size="lg">
+            <Button size="lg" onClick={handleConnectWallet}>
               <Wallet className="w-5 h-5 mr-2" />
               Connect Wallet
             </Button>

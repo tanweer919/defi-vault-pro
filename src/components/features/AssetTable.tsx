@@ -20,6 +20,7 @@ import {
   Coins,
   Search,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface AssetTableProps {
   portfolioData: PortfolioData | undefined;
@@ -299,10 +300,24 @@ export const AssetTable: React.FC<AssetTableProps> = ({
                 </td>
                 <td className="py-4 px-4 text-center">
                   <div className="flex justify-center space-x-2">
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // Navigate to swap page with this token pre-selected
+                        window.location.href = `/swap?from=${asset.symbol}`;
+                      }}
+                    >
                       Trade
                     </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        // Show asset details or options menu
+                        toast(`More options for ${asset.symbol} coming soon!`);
+                      }}
+                    >
                       <MoreHorizontal className="w-4 h-4" />
                     </Button>
                   </div>

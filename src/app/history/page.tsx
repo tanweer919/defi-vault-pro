@@ -7,11 +7,51 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { TransactionHistory } from "@/components/features/TransactionHistory";
 import { Calendar, Filter, Search, Download } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function HistoryPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const [tokenFilter, setTokenFilter] = useState("all");
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportCSV = async () => {
+    setIsExporting(true);
+    try {
+      // Simulate export process
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Create sample CSV content
+      const csvContent = `Date,Type,Token,Amount,Hash,Status
+2024-01-15,Swap,ETH,1.5,0x123...abc,Completed
+2024-01-14,Transfer,USDC,1000,0x456...def,Completed
+2024-01-13,Swap,WBTC,0.05,0x789...ghi,Completed`;
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `transaction_history_${
+        new Date().toISOString().split("T")[0]
+      }.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Transaction history exported successfully!");
+    } catch (error) {
+      toast.error("Failed to export transaction history");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setDateRange({ from: "", to: "" });
+    setTokenFilter("all");
+    toast.success("Filters cleared");
+  };
 
   return (
     <div className="space-y-6">
@@ -28,10 +68,20 @@ export default function HistoryPage() {
             Track all your DeFi activities and swaps
           </p>
         </div>
-        <Button variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          Export CSV
-        </Button>
+        <div className="flex space-x-2">
+          <Button variant="ghost" onClick={clearFilters}>
+            Clear Filters
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExportCSV}
+            loading={isExporting}
+            disabled={isExporting}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
       </motion.div>
 
       {/* Filters */}

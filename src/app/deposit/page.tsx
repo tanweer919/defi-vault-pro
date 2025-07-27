@@ -60,14 +60,40 @@ export default function DepositPage() {
     toast.success("Address copied to clipboard!");
   };
 
-  const handleRefreshBalance = () => {
-    toast.success("Balance refreshed!");
+  const handleRefreshBalance = async () => {
+    setIsProcessing(true);
+    try {
+      // Simulate balance refresh
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      toast.success("Balance refreshed!");
+    } catch (error) {
+      toast.error("Failed to refresh balance");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const generateQRCode = () => {
-    // In a real app, you'd use a QR code library
-    setShowQR(true);
-    toast.success("QR code generated!");
+    setShowQR(!showQR);
+    if (!showQR) {
+      toast.success("QR code generated!");
+    }
+  };
+
+  const handleExportCSV = () => {
+    // Create CSV content
+    const csvContent = `Token,Address,Network\n${selectedToken},${depositAddress},Ethereum`;
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${selectedToken}_deposit_info.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    toast.success("Deposit info exported!");
   };
 
   return (
@@ -220,7 +246,13 @@ export default function DepositPage() {
 
       {/* Actions */}
       <div className="flex justify-center space-x-4">
-        <Button variant="outline" onClick={handleRefreshBalance} size="lg">
+        <Button
+          variant="outline"
+          onClick={handleRefreshBalance}
+          size="lg"
+          loading={isProcessing}
+          disabled={isProcessing}
+        >
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh Balance
         </Button>
@@ -237,6 +269,11 @@ export default function DepositPage() {
         >
           <ExternalLink className="w-4 h-4 mr-2" />
           View on Explorer
+        </Button>
+
+        <Button variant="outline" size="lg" onClick={handleExportCSV}>
+          <Copy className="w-4 h-4 mr-2" />
+          Export Info
         </Button>
       </div>
 

@@ -7,15 +7,23 @@ import { Button } from "@/components/ui/Button";
 import { PortfolioDashboard } from "@/components/features/PortfolioDashboard";
 import { useWalletState } from "@/lib/hooks/useWalletState";
 import { useDemoMode } from "@/lib/hooks/useDemoMode";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { TrendingUp, Zap, Shield, BarChart3, Wallet, Eye } from "lucide-react";
 import Link from "next/link";
 
 export default function HomePage() {
   const { isConnected } = useWalletState();
   const { isDemoMode, enableDemoMode, isDemoAvailable } = useDemoMode();
+  const { openConnectModal } = useConnectModal();
 
   const handleEnableDemo = () => {
     enableDemoMode();
+  };
+
+  const handleConnectWallet = () => {
+    if (openConnectModal) {
+      openConnectModal();
+    }
   };
 
   const features = [
@@ -67,7 +75,7 @@ export default function HomePage() {
               </Button>
             </Link>
           ) : (
-            <Button size="lg" className="px-8">
+            <Button size="lg" className="px-8" onClick={handleConnectWallet}>
               <Wallet className="w-5 h-5 mr-2" />
               Connect Wallet
             </Button>
