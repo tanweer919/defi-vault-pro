@@ -89,7 +89,7 @@ export const PortfolioSettings: React.FC = () => {
   const resetSettings = () => {
     setSettings(defaultSettings);
     setHasChanges(true);
-    toast.info("Settings reset to defaults");
+    toast.success("Settings reset to defaults");
   };
 
   return (
