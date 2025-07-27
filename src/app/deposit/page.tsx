@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { TokenImage } from "@/components/ui/TokenImage";
 import { ChainSelector } from "@/components/common/ChainSelector";
 import {
   ArrowDown,
@@ -111,10 +112,11 @@ export default function DepositPage() {
                     }`}
                   >
                     <div className="flex items-center space-x-2">
-                      <img
+                      <TokenImage
                         src={token.logo}
                         alt={token.name}
-                        className="w-6 h-6 rounded-full"
+                        symbol={token.symbol}
+                        size={24}
                       />
                       <span className="font-medium">{token.symbol}</span>
                     </div>

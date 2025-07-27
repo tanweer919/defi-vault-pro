@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useAccount, useChainId } from "wagmi";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { TokenImage } from "@/components/ui/TokenImage";
 import { ArrowUpRight, ArrowDownLeft, ExternalLink, Clock } from "lucide-react";
 import oneInchApi from "@/lib/api/oneInchApi";
 import { formatDistanceToNow } from "date-fns";
@@ -191,15 +192,15 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                         <div className="flex items-center space-x-2 mt-1">
                           <div className="flex items-center space-x-1">
                             {tx.fromToken.logo && (
-                              <img
+                              <TokenImage
                                 src={tx.fromToken.logo}
-                                alt=""
-                                className="w-4 h-4 rounded-full"
+                                alt={tx.fromToken.symbol}
+                                symbol={tx.fromToken.symbol}
+                                size={16}
                               />
                             )}
                             <span className="text-sm text-gray-600">
-                              {parseFloat(tx.fromToken.amount).toFixed(4)}{" "}
-                              {tx.fromToken.symbol}
+                              {tx.fromToken.amount} {tx.fromToken.symbol}
                             </span>
                           </div>
 
@@ -207,15 +208,15 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
 
                           <div className="flex items-center space-x-1">
                             {tx.toToken.logo && (
-                              <img
+                              <TokenImage
                                 src={tx.toToken.logo}
-                                alt=""
-                                className="w-4 h-4 rounded-full"
+                                alt={tx.toToken.symbol}
+                                symbol={tx.toToken.symbol}
+                                size={16}
                               />
                             )}
                             <span className="text-sm text-gray-600">
-                              {parseFloat(tx.toToken.amount).toFixed(4)}{" "}
-                              {tx.toToken.symbol}
+                              {tx.toToken.amount} {tx.toToken.symbol}
                             </span>
                           </div>
                         </div>

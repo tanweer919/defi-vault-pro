@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { PortfolioData } from "@/lib/types";
+import { Input } from "@/components/ui/Input";
+import { TokenImage } from "@/components/ui/TokenImage";
+import { PortfolioData, TokenBalance } from "@/lib/types";
 import { useWalletState } from "@/lib/hooks/useWalletState";
 import { useDemoMode } from "@/lib/hooks/useDemoMode";
 import {
@@ -168,13 +170,12 @@ export const AssetTable: React.FC<AssetTableProps> = ({
             <Card className="p-4 hover:shadow-md transition-shadow" hover>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3">
-                  {asset.logo && (
-                    <img
-                      src={asset.logo}
-                      alt={asset.symbol}
-                      className="w-10 h-10 rounded-full"
-                    />
-                  )}
+                  <TokenImage
+                    src={asset.logo}
+                    alt={asset.symbol}
+                    symbol={asset.symbol}
+                    size={40}
+                  />
                   <div>
                     <h3 className="font-semibold text-gray-900">
                       {asset.symbol}
@@ -264,13 +265,12 @@ export const AssetTable: React.FC<AssetTableProps> = ({
               >
                 <td className="py-4 px-4">
                   <div className="flex items-center space-x-3">
-                    {asset.logo && (
-                      <img
-                        src={asset.logo}
-                        alt={asset.symbol}
-                        className="w-8 h-8 rounded-full"
-                      />
-                    )}
+                    <TokenImage
+                      src={asset.logo}
+                      alt={asset.symbol}
+                      symbol={asset.symbol}
+                      size={32}
+                    />
                     <div>
                       <p className="font-medium text-gray-900">
                         {asset.symbol}

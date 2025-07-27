@@ -100,7 +100,7 @@ export const useDemoMode = () => {
         decimals: 18,
         price: 2400,
         value: 6000,
-        logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png",
+        logo: "https://assets.coingecko.com/coins/images/279/small/ethereum.png",
       },
       {
         address: "0xa0b86a33e6441c78c71c9e84f5e1ad15b2b3b7c6",
@@ -110,7 +110,7 @@ export const useDemoMode = () => {
         decimals: 6,
         price: 1,
         value: 8500,
-        logo: "https://cryptologos.cc/logos/usd-coin-usdc-logo.png",
+        logo: "https://assets.coingecko.com/coins/images/6319/small/USD_Coin_icon.png",
       },
       {
         address: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
@@ -120,7 +120,7 @@ export const useDemoMode = () => {
         decimals: 8,
         price: 43000,
         value: 6450,
-        logo: "https://cryptologos.cc/logos/wrapped-bitcoin-wbtc-logo.png",
+        logo: "https://assets.coingecko.com/coins/images/7598/small/wrapped_bitcoin_wbtc.png",
       },
       {
         address: "0x514910771af9ca656af840dff83e8264ecf986ca",
@@ -130,7 +130,7 @@ export const useDemoMode = () => {
         decimals: 18,
         price: 15.2,
         value: 6840,
-        logo: "https://cryptologos.cc/logos/chainlink-link-logo.png",
+        logo: "https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png",
       },
     ];
 
