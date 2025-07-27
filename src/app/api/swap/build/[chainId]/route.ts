@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { chainId: string } },
+  { params }: { params: Promise<{ chainId: string }> },
 ) {
+  let body: any;
+
   try {
-    const { chainId } = params;
-    const body = await request.json();
+    const { chainId } = await params;
+    body = await request.json();
 
     const response = await fetch(
       `https://api.1inch.dev/swap/v6.0/${chainId}/swap`,
@@ -29,7 +31,7 @@ export async function POST(
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Build swap transaction API error:", error);
 
     // Return mock data in development
@@ -46,8 +48,10 @@ export async function POST(
           {
             name: "Uniswap V3",
             part: 100,
-            fromTokenAddress: body.src,
-            toTokenAddress: body.dst,
+            fromTokenAddress:
+              body?.src || "0x0000000000000000000000000000000000000000",
+            toTokenAddress:
+              body?.dst || "0x0000000000000000000000000000000000000000",
           },
         ],
       });

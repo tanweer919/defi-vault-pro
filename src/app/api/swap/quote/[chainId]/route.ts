@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { chainId: string } }
+  { params }: { params: Promise<{ chainId: string }> },
 ) {
   try {
-    const { chainId } = params;
+    const { chainId } = await params;
     const { searchParams } = request.nextUrl;
 
     const queryString = searchParams.toString();
@@ -14,11 +14,11 @@ export async function GET(
       `https://api.1inch.dev/swap/v6.0/${chainId}/quote?${queryString}`,
       {
         headers: {
-          'Authorization': `Bearer ${process.env.ONEINCH_API_KEY}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
+          "Content-Type": "application/json",
         },
-        next: { revalidate: 10 } // Cache for 10 seconds
-      }
+        next: { revalidate: 10 }, // Cache for 10 seconds
+      },
     );
 
     if (!response.ok) {
@@ -27,12 +27,11 @@ export async function GET(
 
     const data = await response.json();
     return NextResponse.json(data);
-
-  } catch (error: any) {
-    console.error('Swap quote API error:', error);
+  } catch (error: unknown) {
+    console.error("Swap quote API error:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch swap quote' },
-      { status: 500 }
+      { error: "Failed to fetch swap quote" },
+      { status: 500 },
     );
   }
 }

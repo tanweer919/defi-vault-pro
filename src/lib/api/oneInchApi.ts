@@ -121,6 +121,99 @@ class OneInchApiService {
       throw error;
     }
   }
+
+  async getTransactionHistory(
+    address: string,
+    chainId: ChainId,
+    limit: number = 50,
+  ): Promise<any> {
+    try {
+      console.log(
+        `Fetching transaction history for ${address} on chain ${chainId}`,
+      );
+
+      const response = await this.client.get(
+        `/transactions/${chainId}/${address}`,
+        {
+          params: { limit },
+        },
+      );
+
+      console.log("Transaction history response:", response.data);
+      return response.data;
+    } catch (error: unknown) {
+      console.error("Transaction history fetch error:", error);
+      throw new Error(
+        `Failed to fetch transaction history: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  async getLimitOrders(chainId: ChainId, address: string): Promise<any[]> {
+    try {
+      console.log(`Fetching limit orders for ${address} on chain ${chainId}`);
+
+      const response = await this.client.get(
+        `/limit-orders/${chainId}/${address}`,
+      );
+
+      console.log("Limit orders response:", response.data);
+      return response.data;
+    } catch (error: unknown) {
+      console.error("Limit orders fetch error:", error);
+      throw new Error(
+        `Failed to fetch limit orders: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  async createLimitOrder(chainId: ChainId, orderData: any): Promise<any> {
+    try {
+      console.log(`Creating limit order on chain ${chainId}:`, orderData);
+
+      const response = await this.client.post(
+        `/limit-orders/${chainId}`,
+        orderData,
+      );
+
+      console.log("Create limit order response:", response.data);
+      return response.data;
+    } catch (error: unknown) {
+      console.error("Create limit order error:", error);
+      throw new Error(
+        `Failed to create limit order: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  async cancelLimitOrder(chainId: ChainId, orderId: string): Promise<any> {
+    try {
+      console.log(`Canceling limit order ${orderId} on chain ${chainId}`);
+
+      const response = await this.client.delete(
+        `/limit-orders/${chainId}/cancel`,
+        {
+          params: { orderId },
+        },
+      );
+
+      console.log("Cancel limit order response:", response.data);
+      return response.data;
+    } catch (error: unknown) {
+      console.error("Cancel limit order error:", error);
+      throw new Error(
+        `Failed to cancel limit order: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
 }
 
 export default new OneInchApiService();
