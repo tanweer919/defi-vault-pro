@@ -23,7 +23,6 @@ class OneInchApiService {
     this.client.interceptors.response.use(
       (response) => response,
       (error) => {
-        console.error("API Error:", error.response?.data || error.message);
         throw error;
       },
     );
@@ -31,14 +30,11 @@ class OneInchApiService {
 
   async getWalletBalances(chainId: ChainId, address: string): Promise<any> {
     try {
-      console.log(`Fetching balances for ${address} on chain ${chainId}`);
 
       const response = await this.client.get(`/balances/${chainId}/${address}`);
 
-      console.log("Balance response:", response.data);
       return response.data;
     } catch (error: any) {
-      console.error("Balance fetch error:", error);
       throw new Error(
         `Failed to fetch balances: ${
           error.response?.data?.error || error.message
@@ -51,7 +47,7 @@ class OneInchApiService {
     try {
       if (!tokens.length) return {};
 
-      console.log(`Fetching prices for tokens on chain ${chainId}:`, tokens);
+      g(`Fetching prices for tokens on chain ${chainId}:`, tokens);
 
       const response = await this.client.post(`/prices/${chainId}`, {
         params: {
@@ -60,10 +56,8 @@ class OneInchApiService {
         },
       });
 
-      console.log("Price response:", response.data);
       return response.data;
     } catch (error: any) {
-      console.error("Price fetch error:", error);
       throw new Error(
         `Failed to fetch prices: ${
           error.response?.data?.error || error.message
@@ -79,7 +73,6 @@ class OneInchApiService {
       });
       return response.data;
     } catch (error: any) {
-      console.error("Token metadata error:", error);
 
       // Return basic metadata if API fails
       return {
@@ -102,7 +95,6 @@ class OneInchApiService {
       });
       return response.data;
     } catch (error: any) {
-      console.error("Swap quote error:", error);
       throw error;
     }
   }
@@ -117,7 +109,6 @@ class OneInchApiService {
       );
       return response.data;
     } catch (error: any) {
-      console.error("Build swap transaction error:", error);
       throw error;
     }
   }
@@ -128,9 +119,6 @@ class OneInchApiService {
     limit: number = 50,
   ): Promise<any> {
     try {
-      console.log(
-        `Fetching transaction history for ${address} on chain ${chainId}`,
-      );
 
       const response = await this.client.get(
         `/transactions/${chainId}/${address}`,
@@ -139,10 +127,8 @@ class OneInchApiService {
         },
       );
 
-      console.log("Transaction history response:", response.data);
       return response.data;
     } catch (error: unknown) {
-      console.error("Transaction history fetch error:", error);
       throw new Error(
         `Failed to fetch transaction history: ${
           error instanceof Error ? error.message : "Unknown error"
@@ -153,16 +139,13 @@ class OneInchApiService {
 
   async getLimitOrders(chainId: ChainId, address: string): Promise<any[]> {
     try {
-      console.log(`Fetching limit orders for ${address} on chain ${chainId}`);
 
       const response = await this.client.get(
         `/limit-orders/${chainId}/${address}`,
       );
 
-      console.log("Limit orders response:", response.data);
       return response.data;
     } catch (error: unknown) {
-      console.error("Limit orders fetch error:", error);
       throw new Error(
         `Failed to fetch limit orders: ${
           error instanceof Error ? error.message : "Unknown error"
@@ -173,17 +156,14 @@ class OneInchApiService {
 
   async createLimitOrder(chainId: ChainId, orderData: any): Promise<any> {
     try {
-      console.log(`Creating limit order on chain ${chainId}:`, orderData);
 
       const response = await this.client.post(
         `/limit-orders/${chainId}`,
         orderData,
       );
 
-      console.log("Create limit order response:", response.data);
       return response.data;
     } catch (error: unknown) {
-      console.error("Create limit order error:", error);
       throw new Error(
         `Failed to create limit order: ${
           error instanceof Error ? error.message : "Unknown error"
@@ -194,7 +174,6 @@ class OneInchApiService {
 
   async cancelLimitOrder(chainId: ChainId, orderId: string): Promise<any> {
     try {
-      console.log(`Canceling limit order ${orderId} on chain ${chainId}`);
 
       const response = await this.client.delete(
         `/limit-orders/${chainId}/cancel`,
@@ -203,10 +182,8 @@ class OneInchApiService {
         },
       );
 
-      console.log("Cancel limit order response:", response.data);
       return response.data;
     } catch (error: unknown) {
-      console.error("Cancel limit order error:", error);
       throw new Error(
         `Failed to cancel limit order: ${
           error instanceof Error ? error.message : "Unknown error"

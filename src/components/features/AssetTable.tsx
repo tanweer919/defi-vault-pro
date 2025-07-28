@@ -37,7 +37,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({
   filterBy,
   viewMode,
 }) => {
-  const { isConnected } = useWalletState();
+  const { isConnected, isHydrated } = useWalletState();
   const { isDemoMode } = useDemoMode();
 
   const filteredAndSortedAssets = useMemo(() => {
@@ -107,6 +107,32 @@ export const AssetTable: React.FC<AssetTableProps> = ({
   };
 
   const demoChanges = getDemoChanges();
+
+  // Show loading while hydrating to prevent flash
+  if (!isHydrated) {
+    return (
+      <Card className="p-6" gradient>
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-48 mb-6"></div>
+          <div className="space-y-4">
+            {[...Array(3)].map((_, index) => (
+              <div key={index} className="flex items-center space-x-4">
+                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-16"></div>
+                </div>
+                <div className="text-right">
+                  <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-16"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   // Show wallet connection prompt if not connected AND not in demo mode
   if (!isConnected && !isDemoMode) {
@@ -193,7 +219,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({
                 <div>
                   <p className="text-sm text-gray-600">Balance</p>
                   <p className="font-medium">
-                    {parseFloat(asset.balance).toFixed(4)}
+                    {parseFloat(asset.balance).toFixed(5)} {asset.symbol}
                   </p>
                 </div>
                 <div>
@@ -282,7 +308,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({
                 </td>
                 <td className="py-4 px-4 text-right">
                   <p className="font-medium">
-                    {parseFloat(asset.balance).toFixed(4)}
+                    {parseFloat(asset.balance).toFixed(5)} {asset.symbol}
                   </p>
                 </td>
                 <td className="py-4 px-4 text-right">
