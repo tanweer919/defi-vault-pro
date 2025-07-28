@@ -89,7 +89,7 @@ Before running this project, make sure you have:
 1. **Clone the repository**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/tanweer919/defi-valult-pro.git
    cd defi-vault-pro
    ```
 
