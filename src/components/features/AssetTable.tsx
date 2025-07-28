@@ -193,7 +193,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({
                 <div>
                   <p className="text-sm text-gray-600">Balance</p>
                   <p className="font-medium">
-                    {parseFloat(asset.balance).toFixed(4)}
+                    {parseFloat(asset.balance).toFixed(5)}
                   </p>
                 </div>
                 <div>
@@ -282,7 +282,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({
                 </td>
                 <td className="py-4 px-4 text-right">
                   <p className="font-medium">
-                    {parseFloat(asset.balance).toFixed(4)}
+                    {parseFloat(asset.balance).toFixed(5)}
                   </p>
                 </td>
                 <td className="py-4 px-4 text-right">

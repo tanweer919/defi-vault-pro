@@ -5,6 +5,7 @@ import oneInchApi from "../api/oneInchApi";
 import { PortfolioData, TokenBalance } from "../types";
 import { ChainId } from "../config/wagmi";
 import { useDemoMode } from "./useDemoMode";
+import { formatTokenBalance } from "../utils/utils";
 
 export const usePortfolio = () => {
   const { address } = useAccount();
@@ -50,7 +51,7 @@ export const usePortfolio = () => {
       // Process portfolio items
       const items: TokenBalance[] = await Promise.all(
         tokenAddresses.map(async (tokenAddress) => {
-          const balance = balances[tokenAddress];
+          const rawBalance = balances[tokenAddress];
           const price = Number(prices[tokenAddress]) || 0;
 
           try {
@@ -58,26 +59,35 @@ export const usePortfolio = () => {
               chainId as ChainId,
               tokenAddress,
             );
+            // Convert balance from wei to display units
+            const displayBalance = formatTokenBalance(
+              rawBalance,
+              tokenInfo.assets.decimals,
+            );
+            const calculatedValue = displayBalance * price;
             return {
               address: tokenAddress,
               symbol: tokenInfo.assets.symbol,
               name: tokenInfo.assets.name,
-              balance: balance,
+              balance: displayBalance.toString(),
               decimals: tokenInfo.assets.decimals,
               price: price,
-              value: parseFloat(balance) * price,
+              value: calculatedValue,
               logo: tokenInfo.assets.logoURI,
             };
           } catch (error) {
             // Fallback for ETH (native token)
+            const decimals = 18;
+            const displayBalance = formatTokenBalance(rawBalance, decimals);
+            const calculatedValue = displayBalance * price;
             return {
               address: tokenAddress,
               symbol: "ETH",
               name: "Ethereum",
-              balance: balance,
+              balance: displayBalance.toString(),
               decimals: 18,
               price: price,
-              value: parseFloat(balance) * price,
+              value: calculatedValue,
               logo: undefined,
             };
           }
