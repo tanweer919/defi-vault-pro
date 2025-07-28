@@ -49,6 +49,7 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: unknown) {
+    console.error("Token metadata API error:", error);
 
     return NextResponse.json({
       assets: {

@@ -45,6 +45,7 @@ export async function POST(
       message: "Order creation not implemented in production mode",
     });
   } catch (error: unknown) {
+    console.error("Create limit order API error:", error);
 
     return NextResponse.json(
       { error: "Failed to create limit order" },

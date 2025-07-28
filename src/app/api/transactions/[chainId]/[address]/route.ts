@@ -57,6 +57,7 @@ export async function GET(
     });
 
   } catch (error: unknown) {
+    console.error('Transaction history API error:', error);
     
     return NextResponse.json(
       { error: 'Failed to fetch transaction history' },
