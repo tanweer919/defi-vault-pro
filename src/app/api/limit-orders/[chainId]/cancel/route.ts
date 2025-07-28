@@ -49,7 +49,6 @@ export async function DELETE(
       message: "Order cancellation not implemented in production mode",
     });
   } catch (error: unknown) {
-    console.error("Cancel limit order API error:", error);
 
     return NextResponse.json(
       { error: "Failed to cancel limit order" },

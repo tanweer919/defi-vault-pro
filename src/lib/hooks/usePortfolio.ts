@@ -1,28 +1,17 @@
+import { useQuery } from "@tanstack/react-query";
 import { useAccount, useChainId } from "wagmi";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
-import oneInchApi from "../api/oneInchApi";
-import { PortfolioData, TokenBalance } from "../types";
-import { ChainId } from "../config/wagmi";
+import oneInchApi from "@/lib/api/oneInchApi";
+import { ChainId } from "@/lib/config/wagmi";
+import { PortfolioData, TokenBalance } from "@/lib/types";
 import { useDemoMode } from "./useDemoMode";
+import { formatTokenBalance } from "@/lib/utils/utils";
 
 export const usePortfolio = () => {
   const { address } = useAccount();
   const chainId = useChainId();
   const { isDemoMode, getDemoPortfolioData } = useDemoMode();
-  const queryClient = useQueryClient();
 
-  // Invalidate query when demo mode changes
-  useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ["portfolio"] });
-  }, [isDemoMode, queryClient]);
-
-  const {
-    data: portfolioData,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery<PortfolioData>({
+  const query = useQuery<PortfolioData>({
     queryKey: ["portfolio", address, chainId, isDemoMode],
     queryFn: async () => {
       // If demo mode is enabled, return demo data
@@ -50,7 +39,7 @@ export const usePortfolio = () => {
       // Process portfolio items
       const items: TokenBalance[] = await Promise.all(
         tokenAddresses.map(async (tokenAddress) => {
-          const balance = balances[tokenAddress];
+          const rawBalance = balances[tokenAddress];
           const price = Number(prices[tokenAddress]) || 0;
 
           try {
@@ -58,26 +47,38 @@ export const usePortfolio = () => {
               chainId as ChainId,
               tokenAddress,
             );
+
+            // Convert balance from wei to display units
+            const displayBalance = formatTokenBalance(
+              rawBalance,
+              tokenInfo.assets.decimals,
+            );
+            const calculatedValue = displayBalance * price;
+
             return {
               address: tokenAddress,
               symbol: tokenInfo.assets.symbol,
               name: tokenInfo.assets.name,
-              balance: balance,
+              balance: displayBalance.toString(),
               decimals: tokenInfo.assets.decimals,
               price: price,
-              value: parseFloat(balance) * price,
+              value: calculatedValue,
               logo: tokenInfo.assets.logoURI,
             };
           } catch (error) {
             // Fallback for ETH (native token)
+            const decimals = 18;
+            const displayBalance = formatTokenBalance(rawBalance, decimals);
+            const calculatedValue = displayBalance * price;
+
             return {
               address: tokenAddress,
               symbol: "ETH",
               name: "Ethereum",
-              balance: balance,
-              decimals: 18,
+              balance: displayBalance.toString(),
+              decimals: decimals,
               price: price,
-              value: parseFloat(balance) * price,
+              value: calculatedValue,
               logo: undefined,
             };
           }
@@ -87,22 +88,21 @@ export const usePortfolio = () => {
       const totalValue = items.reduce((sum, item) => sum + item.value, 0);
 
       return {
-        items,
         totalValue,
-        change24h: 0, // Would need historical data
-        chainId,
+        items,
+        change24h: 0,
+        chainId: chainId as number,
       };
     },
-    enabled: isDemoMode || (!!address && !!chainId),
-    refetchInterval: isDemoMode ? false : 30000, // Don't refetch in demo mode
-    staleTime: isDemoMode ? 0 : 5 * 60 * 1000, // Demo data is immediately stale
+    enabled: !!address && !!chainId,
+    refetchInterval: 30000,
   });
 
   return {
-    portfolioData,
-    isLoading,
-    error,
-    refetch,
+    portfolioData: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
     isDemoMode,
   };
 };

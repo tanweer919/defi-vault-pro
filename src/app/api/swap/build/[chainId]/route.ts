@@ -32,7 +32,6 @@ export async function POST(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: unknown) {
-    console.error("Build swap transaction API error:", error);
 
     // Return mock data in development
     if (process.env.NODE_ENV === "development") {

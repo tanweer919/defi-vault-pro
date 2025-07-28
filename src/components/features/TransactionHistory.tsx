@@ -93,7 +93,6 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
 
       setTransactions(formattedTransactions);
     } catch (error) {
-      console.error("Failed to fetch transactions:", error);
     } finally {
       setLoading(false);
     }

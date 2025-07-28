@@ -107,7 +107,6 @@ export const LimitOrderInterface: React.FC = () => {
       setBuyAmount("");
       setExpiry("");
     } catch (error) {
-      console.error("Order creation error:", error);
       toast.error("Failed to create limit order");
     }
   };

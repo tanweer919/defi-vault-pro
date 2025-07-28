@@ -35,7 +35,7 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: unknown) {
-    console.error("Price API error:", error);
+    error("Price API error:", error);
 
     // Return mock prices in development
     if (process.env.NODE_ENV === "development") {
@@ -101,24 +101,31 @@ export async function POST(
     }
 
     const data = await response.json();
-    console.log(data);
+    g(data);
     return NextResponse.json(data);
   } catch (error: unknown) {
-    console.error("Price API error:", error);
 
     // Return mock prices in development
     if (process.env.NODE_ENV === "development") {
-      const tokenList =
-        request.nextUrl.searchParams.get("tokens")?.split(",") || [];
+      // For POST request, get tokens from the body that was already parsed
+      let tokenList: string[] = [];
+      try {
+        const bodyClone = await request.clone().json();
+        tokenList = bodyClone.params?.tokens || [];
+      } catch {
+        // Fallback tokens for development
+        tokenList = ["0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"];
+      }
+
       const mockPrices: Record<string, number> = {};
 
       tokenList.forEach((token) => {
         if (token.includes("eeeeeeee")) {
-          mockPrices[token] = 2800;
+          mockPrices[token] = 2800; // ETH price
         } else if (token.includes("a0b86a33")) {
-          mockPrices[token] = 1;
+          mockPrices[token] = 1; // USDC price
         } else if (token.includes("2260fac5")) {
-          mockPrices[token] = 45000;
+          mockPrices[token] = 45000; // WBTC price
         } else {
           mockPrices[token] = Math.random() * 100;
         }
