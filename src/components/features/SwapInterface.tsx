@@ -103,6 +103,7 @@ export const SwapInterface: React.FC = () => {
         setAmount("");
       }
     } catch (error) {
+      console.error("Swap error:", error);
       toast.error("Swap failed. Please try again.");
     }
   };

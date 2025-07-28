@@ -48,6 +48,7 @@ export const PortfolioSettings: React.FC = () => {
         const parsed = JSON.parse(savedSettings);
         setSettings({ ...defaultSettings, ...parsed });
       } catch (error) {
+        console.error("Failed to parse saved settings:", error);
       }
     }
   }, []);
@@ -80,6 +81,7 @@ export const PortfolioSettings: React.FC = () => {
         new CustomEvent("settingsChanged", { detail: settings }),
       );
     } catch (error) {
+      console.error("Failed to save settings:", error);
       toast.error("Failed to save settings");
     }
   };

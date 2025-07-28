@@ -28,6 +28,7 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: unknown) {
+    console.error("Swap quote API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch swap quote" },
       { status: 500 },

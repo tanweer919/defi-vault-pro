@@ -84,6 +84,7 @@ export async function GET(
 
     return NextResponse.json([]);
   } catch (error: unknown) {
+    console.error("Limit orders API error:", error);
 
     return NextResponse.json(
       { error: "Failed to fetch limit orders" },
