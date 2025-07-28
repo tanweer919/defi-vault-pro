@@ -89,7 +89,7 @@ Before running this project, make sure you have:
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/tanweer919/defi-valult-pro.git
+   git clone https://github.com/tanweer919/defi-vault-pro.git
    cd defi-vault-pro
    ```
 
@@ -238,7 +238,6 @@ For support and questions:
 
 - 📧 Email: [tanweer.anwar919@gmail.com](mailto:tanweer.anwar919@gmail.com)
 - 🐛 Issues: [GitHub Issues](https://github.com/tanweer919/defi-vault-pro/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/tanweer919/defi-vault-pro/discussions)
 
 ---
 
