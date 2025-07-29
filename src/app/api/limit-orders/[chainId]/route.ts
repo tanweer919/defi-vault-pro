@@ -1,5 +1,88 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const ONEINCH_API_BASE = "https://api.1inch.dev";
+const SUPPORTED_CHAINS = ["1", "137", "56", "42161"]; // Ethereum, Polygon, BSC, Arbitrum
+
+interface DemoOrder {
+  id: string;
+  orderId: string;
+  maker: string;
+  makerAsset: string;
+  takerAsset: string;
+  makingAmount: string;
+  takingAmount: string;
+  salt: string;
+  status: string;
+  createdAt: string;
+  expiresAt: string;
+  filledAmount: string;
+  remainingAmount: string;
+  chainId: number;
+  signature: string;
+}
+
+// Demo orders storage (in production, use database)
+const demoOrders = new Map<string, DemoOrder>();
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ chainId: string }> },
+) {
+  try {
+    const { chainId } = await params;
+    const { searchParams } = new URL(request.url);
+    const maker = searchParams.get("maker");
+
+    // Demo mode - return stored demo orders
+    if (
+      process.env.NODE_ENV === "development" ||
+      searchParams.get("demo") === "true"
+    ) {
+      const orders = Array.from(demoOrders.values())
+        .filter((order) => order.chainId === parseInt(chainId))
+        .filter(
+          (order) =>
+            !maker || order.maker.toLowerCase() === maker.toLowerCase(),
+        );
+
+      return NextResponse.json(orders);
+    }
+
+    // Production 1inch API integration
+    const API_KEY = process.env.ONEINCH_API_KEY;
+    if (!API_KEY) {
+      return NextResponse.json(
+        { error: "1inch API key not configured" },
+        { status: 500 },
+      );
+    }
+
+    const url = new URL(`${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/orders`);
+    if (maker) {
+      url.searchParams.set("maker", maker);
+    }
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    return NextResponse.json(result);
+  } catch (error: unknown) {
+    console.error("Fetch limit orders API error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch limit orders" },
+      { status: 500 },
+    );
+  }
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ chainId: string }> },
@@ -8,47 +91,126 @@ export async function POST(
     const { chainId } = await params;
     const orderData = await request.json();
 
-    // Since 1inch limit order creation requires wallet signatures and special handling,
-    // we'll return mock success for development
-    if (process.env.NODE_ENV === "development") {
-      const mockOrderResponse = {
-        orderId: `0x${Math.random().toString(16).substr(2, 64)}`,
-        status: "active",
-        hash: `0x${Math.random().toString(16).substr(2, 64)}`,
-        ...orderData,
-        createdAt: Math.floor(Date.now() / 1000),
-        id: Math.random().toString(36).substr(2, 9),
-      };
-
-      return NextResponse.json(mockOrderResponse);
+    // Validate chain ID
+    if (!SUPPORTED_CHAINS.includes(chainId)) {
+      return NextResponse.json(
+        { error: `Unsupported chain ID: ${chainId}` },
+        { status: 400 },
+      );
     }
 
-    // For production, implement 1inch limit order creation
-    // This would involve:
-    // 1. Validating the order data
-    // 2. Creating the order signature
-    // 3. Submitting to 1inch orderbook
-    // const response = await fetch(
-    //   `https://api.1inch.dev/orderbook/v4.0/${chainId}/order`,
-    //   {
-    //     method: 'POST',
-    //     headers: {
-    //       'Authorization': `Bearer ${process.env.ONEINCH_API_KEY}`,
-    //       'Content-Type': 'application/json'
-    //     },
-    //     body: JSON.stringify(orderData)
-    //   }
-    // );
+    // Validate required fields
+    const {
+      makerAsset,
+      takerAsset,
+      makingAmount,
+      takingAmount,
+      maker,
+      expiry,
+    } = orderData;
+    if (
+      !makerAsset ||
+      !takerAsset ||
+      !makingAmount ||
+      !takingAmount ||
+      !maker
+    ) {
+      return NextResponse.json(
+        { error: "Missing required order parameters" },
+        { status: 400 },
+      );
+    }
+
+    // Demo mode handling
+    if (process.env.NODE_ENV === "development" || orderData.demo) {
+      const orderId = `demo_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+      const mockOrder: DemoOrder = {
+        id: orderId,
+        orderId,
+        maker,
+        makerAsset,
+        takerAsset,
+        makingAmount,
+        takingAmount,
+        salt: Date.now().toString(),
+        status: "active",
+        createdAt: new Date().toISOString(),
+        expiresAt: expiry
+          ? new Date(expiry * 1000).toISOString()
+          : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        filledAmount: "0",
+        remainingAmount: makingAmount,
+        chainId: parseInt(chainId),
+        signature: `0x${"0".repeat(130)}`, // Mock signature
+      };
+
+      // Store demo order
+      demoOrders.set(orderId, mockOrder);
+
+      return NextResponse.json({
+        success: true,
+        order: mockOrder,
+      });
+    }
+
+    // Production 1inch API integration
+    const API_KEY = process.env.ONEINCH_API_KEY;
+    if (!API_KEY) {
+      return NextResponse.json(
+        { error: "1inch API key not configured" },
+        { status: 500 },
+      );
+    }
+
+    // Prepare order for 1inch API
+    const oneInchOrderData = {
+      makerAsset,
+      takerAsset,
+      makingAmount,
+      takingAmount,
+      maker,
+      receiver: maker,
+      allowedSender: "0x0000000000000000000000000000000000000000",
+      predicate: "0x",
+      permit: "0x",
+      preInteraction: "0x",
+      postInteraction: "0x",
+      salt: orderData.salt || Date.now().toString(),
+      ...(expiry && { expiry }),
+    };
+
+    const response = await fetch(
+      `${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/order`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(oneInchOrderData),
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.description || `HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
 
     return NextResponse.json({
       success: true,
-      message: "Order creation not implemented in production mode",
+      order: result,
     });
   } catch (error: unknown) {
     console.error("Create limit order API error:", error);
-
     return NextResponse.json(
-      { error: "Failed to create limit order" },
+      {
+        error: "Failed to create limit order",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 },
     );
   }

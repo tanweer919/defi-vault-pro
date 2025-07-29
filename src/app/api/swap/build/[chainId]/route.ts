@@ -1,36 +1,87 @@
 import { NextRequest, NextResponse } from "next/server";
 
+interface SwapRequestBody {
+  src: string;
+  dst: string;
+  amount: string;
+  from: string;
+  quoteId: string;
+  slippage?: number;
+  [key: string]: unknown;
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ chainId: string }> },
 ) {
-  let body: any;
+  let body: SwapRequestBody;
 
   try {
     const { chainId } = await params;
     body = await request.json();
 
+    // Validate required parameters
+    const { src, dst, amount, from, quoteId, slippage } = body;
+
+    if (!src || !dst || !amount || !from || !quoteId) {
+      return NextResponse.json(
+        {
+          error: "Missing required parameters: src, dst, amount, from, quoteId",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Build the swap transaction using 1inch Fusion Plus
+    const swapData = {
+      src,
+      dst,
+      amount,
+      from,
+      quoteId,
+      slippage: slippage || 1,
+      ...body,
+    };
+
     const response = await fetch(
-      `https://api.1inch.dev/swap/v6.0/${chainId}/swap`,
+      `https://api.1inch.dev/fusion/swap/v1.0/${chainId}`,
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(swapData),
         next: { revalidate: 0 }, // No cache for swap transactions
       },
     );
 
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("1inch Fusion Plus API error:", errorData);
       throw new Error(
-        `Failed to build swap transaction: ${response.statusText}`,
+        `1inch Fusion Plus API error: ${response.status} ${response.statusText}`,
       );
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+
+    // Format the response for the frontend
+    const formattedResponse = {
+      tx: {
+        to: data.tx.to,
+        data: data.tx.data,
+        value: data.tx.value || "0",
+        gas: data.tx.gas,
+        gasPrice: data.tx.gasPrice,
+      },
+      protocols: data.protocols || [],
+      quoteId: data.quoteId,
+      orderId: data.orderId,
+      permit: data.permit,
+    };
+
+    return NextResponse.json(formattedResponse);
   } catch (error: unknown) {
     console.error("Build swap transaction API error:", error);
 
@@ -40,7 +91,10 @@ export async function POST(
         tx: {
           to: "0x1234567890123456789012345678901234567890",
           data: "0x",
-          value: "0",
+          value:
+            body?.src === "0x0000000000000000000000000000000000000000"
+              ? body?.amount || "0"
+              : "0",
           gas: "200000",
           gasPrice: "20000000000",
         },
@@ -54,6 +108,8 @@ export async function POST(
               body?.dst || "0x0000000000000000000000000000000000000000",
           },
         ],
+        quoteId: "mock-quote-id",
+        orderId: "mock-order-id",
       });
     }
 

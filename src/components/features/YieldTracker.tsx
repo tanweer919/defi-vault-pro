@@ -1,21 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { ProgressBar } from "@/components/ui/ProgressBar";
 import { PortfolioData } from "@/lib/types";
 import { useWalletState } from "@/lib/hooks/useWalletState";
+import { useAnalytics } from "@/lib/hooks/useAnalytics";
 import { useDemoMode } from "@/lib/hooks/useDemoMode";
-import {
-  Coins,
-  TrendingUp,
-  Calendar,
-  Star,
-  Wallet,
-  AlertCircle,
-} from "lucide-react";
+import { useYieldFarming } from "@/lib/hooks/useYieldFarming";
+import { DepositModal } from "./DepositModal";
+import { WithdrawModal } from "./WithdrawModal";
+import { Coins, TrendingUp, Wallet, Loader2 } from "lucide-react";
 
 interface YieldPool {
   id: string;
@@ -28,6 +24,14 @@ interface YieldPool {
   earned: number;
   logo: string;
   risk: "low" | "medium" | "high";
+  category: "lending" | "liquidity" | "farming" | "staking";
+  lockupPeriod?: number;
+  minimumDeposit?: number;
+  fees?: {
+    deposit: number;
+    withdraw: number;
+    performance: number;
+  };
 }
 
 interface YieldTrackerProps {
@@ -37,61 +41,111 @@ interface YieldTrackerProps {
 export const YieldTracker: React.FC<YieldTrackerProps> = ({
   portfolioData,
 }) => {
-  const [pools, setPools] = useState<YieldPool[]>([]);
-  const [loading, setLoading] = useState(true);
   const { isConnected } = useWalletState();
   const { isDemoMode } = useDemoMode();
+  const { analytics } = useAnalytics(portfolioData);
+  const { isLoading } = useYieldFarming();
 
-  useEffect(() => {
-    if (!portfolioData?.totalValue || portfolioData.totalValue === 0) {
-      setPools([]);
-      setLoading(false);
-      return;
-    }
+  // Modal states
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [selectedPool, setSelectedPool] = useState<YieldPool | null>(null);
 
-    // Simulate API call with real portfolio data
-    setTimeout(() => {
-      setPools([
-        {
-          id: "1",
-          protocol: "Uniswap V3",
-          name: "ETH/USDC",
-          apy: 12.4,
-          tvl: 2340000,
-          rewards: ["UNI", "USDC"],
-          deposited: portfolioData.totalValue * 0.3, // 30% of portfolio
-          earned: portfolioData.totalValue * 0.01, // 1% earned
-          logo: "/logos/uniswap.png",
-          risk: "medium",
+  // Modal handlers
+  const handleDepositClick = (pool: YieldPool) => {
+    setSelectedPool(pool);
+    setDepositModalOpen(true);
+  };
+
+  const handleWithdrawClick = (pool: YieldPool) => {
+    setSelectedPool(pool);
+    setWithdrawModalOpen(true);
+  };
+
+  const handleModalSuccess = () => {
+    // Refresh data or show success message
+    console.log("Transaction successful!");
+  };
+
+  // Generate yield pools based on real or demo data
+  const generatePools = (): YieldPool[] => {
+    if (!portfolioData?.totalValue && !isDemoMode) return [];
+
+    const baseValue = portfolioData?.totalValue || 25000; // Demo fallback
+
+    return [
+      {
+        id: "1",
+        protocol: "Uniswap V3",
+        name: "ETH/USDC",
+        apy: isDemoMode ? 12.4 : Math.max(0.5, analytics.avgYield * 0.8),
+        tvl: 2340000,
+        rewards: ["UNI", "USDC"],
+        deposited: baseValue * 0.3,
+        earned:
+          baseValue *
+          (isDemoMode
+            ? 0.01
+            : Math.max(0, (analytics.totalPnlPercent / 100) * 0.3)),
+        logo: "/logos/uniswap.png",
+        risk: "medium",
+        category: "liquidity",
+        fees: {
+          deposit: 0,
+          withdraw: 0.5,
+          performance: 2,
         },
-        {
-          id: "2",
-          protocol: "Compound",
-          name: "USDC Lending",
-          apy: 4.2,
-          tvl: 8900000,
-          rewards: ["COMP"],
-          deposited: portfolioData.totalValue * 0.5, // 50% of portfolio
-          earned: portfolioData.totalValue * 0.005, // 0.5% earned
-          logo: "/logos/compound.png",
-          risk: "low",
+      },
+      {
+        id: "2",
+        protocol: "Compound",
+        name: "USDC Lending",
+        apy: isDemoMode ? 4.2 : Math.max(0.1, analytics.avgYield * 0.3),
+        tvl: 8900000,
+        rewards: ["COMP"],
+        deposited: baseValue * 0.5,
+        earned:
+          baseValue *
+          (isDemoMode
+            ? 0.005
+            : Math.max(0, (analytics.totalPnlPercent / 100) * 0.5)),
+        logo: "/logos/compound.png",
+        risk: "low",
+        category: "lending",
+        minimumDeposit: 10,
+        fees: {
+          deposit: 0,
+          withdraw: 0,
+          performance: 0,
         },
-        {
-          id: "3",
-          protocol: "Aave",
-          name: "ETH Lending",
-          apy: 1.8,
-          tvl: 15600000,
-          rewards: ["AAVE"],
-          deposited: portfolioData.totalValue * 0.2, // 20% of portfolio
-          earned: portfolioData.totalValue * 0.002, // 0.2% earned
-          logo: "/logos/aave.png",
-          risk: "low",
+      },
+      {
+        id: "3",
+        protocol: "Aave",
+        name: "ETH Lending",
+        apy: isDemoMode ? 1.8 : Math.max(0.1, analytics.avgYield * 0.15),
+        tvl: 15600000,
+        rewards: ["AAVE"],
+        deposited: baseValue * 0.2,
+        earned:
+          baseValue *
+          (isDemoMode
+            ? 0.002
+            : Math.max(0, (analytics.totalPnlPercent / 100) * 0.2)),
+        logo: "/logos/aave.png",
+        risk: "low",
+        category: "lending",
+        lockupPeriod: 7,
+        fees: {
+          deposit: 0,
+          withdraw: 0.1,
+          performance: 1,
         },
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, [portfolioData]);
+      },
+    ];
+  };
+
+  const pools = generatePools();
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
@@ -185,9 +239,9 @@ export const YieldTracker: React.FC<YieldTrackerProps> = ({
 
       {/* Pool List */}
       <div className="space-y-4">
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        {pools.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No yield farming positions</p>
           </div>
         ) : (
           pools.map((pool, index) => (
@@ -254,11 +308,29 @@ export const YieldTracker: React.FC<YieldTrackerProps> = ({
                 </div>
 
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm">
-                    Withdraw
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleWithdrawClick(pool)}
+                    disabled={isLoading || pool.deposited === 0}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Withdraw"
+                    )}
                   </Button>
-                  <Button variant="primary" size="sm">
-                    Deposit
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleDepositClick(pool)}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Deposit"
+                    )}
                   </Button>
                 </div>
               </div>
@@ -266,6 +338,21 @@ export const YieldTracker: React.FC<YieldTrackerProps> = ({
           ))
         )}
       </div>
+
+      {/* Modals */}
+      <DepositModal
+        isOpen={depositModalOpen}
+        onClose={() => setDepositModalOpen(false)}
+        pool={selectedPool}
+        onSuccess={handleModalSuccess}
+      />
+
+      <WithdrawModal
+        isOpen={withdrawModalOpen}
+        onClose={() => setWithdrawModalOpen(false)}
+        pool={selectedPool}
+        onSuccess={handleModalSuccess}
+      />
     </Card>
   );
 };

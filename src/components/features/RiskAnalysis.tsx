@@ -5,14 +5,9 @@ import { Card } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { PortfolioData } from "@/lib/types";
 import { useWalletState } from "@/lib/hooks/useWalletState";
+import { useAnalytics } from "@/lib/hooks/useAnalytics";
 import { useDemoMode } from "@/lib/hooks/useDemoMode";
-import {
-  Shield,
-  AlertTriangle,
-  TrendingUp,
-  Wallet,
-  AlertCircle,
-} from "lucide-react";
+import { Shield, AlertTriangle, TrendingUp, Wallet } from "lucide-react";
 
 interface RiskAnalysisProps {
   portfolioData?: PortfolioData;
@@ -23,10 +18,11 @@ export const RiskAnalysis: React.FC<RiskAnalysisProps> = ({
 }) => {
   const { isConnected } = useWalletState();
   const { isDemoMode } = useDemoMode();
+  const { analytics } = useAnalytics(portfolioData);
 
-  // Calculate risk metrics based on portfolio data
+  // Calculate risk metrics based on real analytics and portfolio data
   const calculateRiskMetrics = () => {
-    if (!portfolioData?.items || portfolioData.items.length === 0) {
+    if (!portfolioData?.items && !isDemoMode) {
       return {
         volatility: 0,
         diversification: 0,
@@ -37,31 +33,57 @@ export const RiskAnalysis: React.FC<RiskAnalysisProps> = ({
       };
     }
 
-    const assetCount = portfolioData.items.length;
-    const totalValue = portfolioData.totalValue;
+    if (isDemoMode) {
+      // Use demo analytics risk data
+      return {
+        volatility: 65,
+        diversification: 75,
+        liquidity: 80,
+        overallRisk: Math.round(analytics.riskValue * 10),
+        riskLevel: analytics.riskScore,
+        riskColor:
+          analytics.riskScore === "Low"
+            ? "text-green-600"
+            : analytics.riskScore === "Medium"
+            ? "text-yellow-600"
+            : "text-red-600",
+      };
+    }
 
-    // Simple risk calculations based on portfolio composition
-    const volatility = Math.min(100, Math.max(0, 50 + (assetCount - 3) * 10)); // More assets = lower volatility
-    const diversification = Math.min(100, assetCount * 20); // More assets = better diversification
+    const assetCount = portfolioData?.items?.length || 0;
+    const totalValue = portfolioData?.totalValue || 0;
+
+    // Enhanced risk calculations using analytics data
+    const baseVolatility = analytics.riskValue * 10; // Convert to percentage
+    const volatility = Math.min(100, Math.max(0, baseVolatility));
+
+    const diversification = Math.min(
+      100,
+      assetCount * 20 + (analytics.winRate > 50 ? 20 : 0),
+    );
+
     const liquidity = Math.min(
       100,
-      Math.max(0, 80 - (totalValue > 10000 ? 20 : 0)),
-    ); // Higher value = lower liquidity
+      Math.max(
+        0,
+        80 - (totalValue > 10000 ? 10 : 0) + (analytics.winRate > 70 ? 10 : 0),
+      ),
+    );
 
     const overallRisk = Math.round(
-      (volatility + diversification + liquidity) / 3,
+      (100 - volatility + diversification + liquidity) / 3,
     );
-    const riskLevel =
-      overallRisk > 70 ? "Low" : overallRisk > 40 ? "Medium" : "High";
+
+    const riskLevel = analytics.riskScore;
     const riskColor =
-      overallRisk > 70
+      riskLevel === "Low"
         ? "text-green-600"
-        : overallRisk > 40
+        : riskLevel === "Medium"
         ? "text-yellow-600"
         : "text-red-600";
 
     return {
-      volatility,
+      volatility: 100 - volatility, // Invert so higher is better
       diversification,
       liquidity,
       overallRisk,
@@ -124,8 +146,8 @@ export const RiskAnalysis: React.FC<RiskAnalysisProps> = ({
     );
   }
 
-  // Show empty state if no portfolio data
-  if (!portfolioData?.totalValue || portfolioData.totalValue === 0) {
+  // Show empty state if no portfolio data and not in demo mode
+  if (!portfolioData?.totalValue && !isDemoMode) {
     return (
       <Card className="p-6" gradient>
         <div className="flex items-center justify-center h-64">
@@ -171,7 +193,7 @@ export const RiskAnalysis: React.FC<RiskAnalysisProps> = ({
       </div>
 
       <div className="space-y-3">
-        {riskMetrics.map((metric, index) => (
+        {riskMetrics.map((metric) => (
           <div
             key={metric.name}
             className="flex items-center justify-between py-2"

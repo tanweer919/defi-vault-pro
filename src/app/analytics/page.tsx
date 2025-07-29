@@ -10,6 +10,7 @@ import { YieldTracker } from "@/components/features/YieldTracker";
 import { RiskAnalysis } from "@/components/features/RiskAnalysis";
 import { useWalletState } from "@/lib/hooks/useWalletState";
 import { usePortfolio } from "@/lib/hooks/usePortfolio";
+import { useAnalytics } from "@/lib/hooks/useAnalytics";
 import { useDemoMode } from "@/lib/hooks/useDemoMode";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import {
@@ -26,6 +27,10 @@ export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState("7d");
   const { isConnected } = useWalletState();
   const { portfolioData, isLoading, error, isDemoMode } = usePortfolio();
+  const { analytics, isLoading: analyticsLoading } = useAnalytics(
+    portfolioData,
+    timeRange,
+  );
   const { enableDemoMode, isDemoAvailable } = useDemoMode();
   const { openConnectModal } = useConnectModal();
 
@@ -89,7 +94,7 @@ export default function AnalyticsPage() {
   }
 
   // Show loading state
-  if (isLoading) {
+  if (isLoading || analyticsLoading) {
     return (
       <div className="space-y-6">
         <motion.div
@@ -166,26 +171,10 @@ export default function AnalyticsPage() {
     );
   }
 
-  // Calculate real metrics from portfolio data (or demo data)
+  // Calculate real metrics from portfolio data and analytics
   const totalValue = portfolioData?.totalValue || 0;
   const assetCount = portfolioData?.items?.length || 0;
   const hasData = totalValue > 0 && assetCount > 0;
-
-  // Enhanced demo data for analytics
-  const getDemoAnalytics = () => {
-    if (!isDemoMode || !hasData) return null;
-
-    return {
-      totalPnl: 1283.45,
-      totalPnlPercent: 4.7,
-      winRate: 68.3,
-      avgYield: 8.9,
-      riskScore: "Medium",
-      riskValue: 6.4,
-    };
-  };
-
-  const demoAnalytics = getDemoAnalytics();
 
   return (
     <div className="space-y-6">
@@ -253,18 +242,24 @@ export default function AnalyticsPage() {
             <div>
               <p className="text-sm text-gray-600">Total P&L</p>
               <p className="text-2xl font-bold text-gray-900">
-                {isDemoMode && demoAnalytics
-                  ? `+$${demoAnalytics.totalPnl.toLocaleString()}`
-                  : hasData
-                  ? "$0.00"
-                  : "--"}
+                {hasData || isDemoMode
+                  ? `${analytics.totalPnl >= 0 ? "+" : ""}$${Math.abs(
+                      analytics.totalPnl,
+                    ).toLocaleString()}`
+                  : "$0.00"}
               </p>
-              <p className="text-sm text-green-600">
-                {isDemoMode && demoAnalytics
-                  ? `+${demoAnalytics.totalPnlPercent}%`
-                  : hasData
-                  ? "0.0%"
-                  : "No data"}
+              <p
+                className={`text-sm ${
+                  analytics.totalPnlPercent >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {hasData || isDemoMode
+                  ? `${
+                      analytics.totalPnlPercent >= 0 ? "+" : ""
+                    }${analytics.totalPnlPercent.toFixed(1)}%`
+                  : "0.0%"}
               </p>
             </div>
             <Target className="w-8 h-8 text-green-500" />
@@ -276,14 +271,12 @@ export default function AnalyticsPage() {
             <div>
               <p className="text-sm text-gray-600">Win Rate</p>
               <p className="text-2xl font-bold text-gray-900">
-                {isDemoMode && demoAnalytics
-                  ? `${demoAnalytics.winRate}%`
-                  : hasData
-                  ? "0.0%"
+                {hasData || isDemoMode
+                  ? `${analytics.winRate.toFixed(1)}%`
                   : "--"}
               </p>
               <p className="text-sm text-gray-500">
-                {isDemoMode ? "Trading success" : "No data"}
+                {hasData || isDemoMode ? "Success rate" : "No data"}
               </p>
             </div>
             <PieChart className="w-8 h-8 text-purple-500" />
@@ -295,17 +288,11 @@ export default function AnalyticsPage() {
             <div>
               <p className="text-sm text-gray-600">Risk Score</p>
               <p className="text-2xl font-bold text-gray-900">
-                {isDemoMode && demoAnalytics
-                  ? demoAnalytics.riskScore
-                  : hasData
-                  ? "Low"
-                  : "--"}
+                {hasData || isDemoMode ? analytics.riskScore : "--"}
               </p>
               <p className="text-sm text-gray-500">
-                {isDemoMode && demoAnalytics
-                  ? `${demoAnalytics.riskValue}/10`
-                  : hasData
-                  ? "2.1/10"
+                {hasData || isDemoMode
+                  ? `${analytics.riskValue.toFixed(1)}/10`
                   : "No data"}
               </p>
             </div>
