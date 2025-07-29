@@ -1,65 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { ArrowUpDown, Settings, Zap, AlertCircle } from "lucide-react";
+import {
+  ArrowUpDown,
+  Settings,
+  Zap,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import { useSwap } from "@/lib/hooks/useSwap";
+import { useTokens } from "@/lib/hooks/useTokens";
 import { useWalletState } from "@/lib/hooks/useWalletState";
 import { useDemoMode } from "@/lib/hooks/useDemoMode";
 import toast from "react-hot-toast";
-
-// Common tokens with proper addresses
-const TOKENS = {
-  1: [
-    // Ethereum
-    {
-      address: "0x0000000000000000000000000000000000000000",
-      symbol: "ETH",
-      name: "Ethereum",
-    },
-    {
-      address: "0xA0b86a33E6441E5BA2AD8D73B8E76C6B72C2E6eF",
-      symbol: "USDC",
-      name: "USD Coin",
-    },
-    {
-      address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-      symbol: "USDT",
-      name: "Tether USD",
-    },
-    {
-      address: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-      symbol: "DAI",
-      name: "Dai Stablecoin",
-    },
-    {
-      address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
-      symbol: "WBTC",
-      name: "Wrapped Bitcoin",
-    },
-  ],
-  137: [
-    // Polygon
-    {
-      address: "0x0000000000000000000000000000000000000000",
-      symbol: "MATIC",
-      name: "Polygon",
-    },
-    {
-      address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
-      symbol: "USDC",
-      name: "USD Coin",
-    },
-    {
-      address: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
-      symbol: "USDT",
-      name: "Tether USD",
-    },
-  ],
-};
 
 export const SwapInterface: React.FC = () => {
   const [fromToken, setFromToken] = useState("");
@@ -67,18 +25,75 @@ export const SwapInterface: React.FC = () => {
   const [amount, setAmount] = useState("");
   const [slippage, setSlippage] = useState(1);
   const [showSettings, setShowSettings] = useState(false);
+  const [swapStatus, setSwapStatus] = useState<
+    "idle" | "pending" | "success" | "error"
+  >("idle");
 
   const { isConnected, chainId } = useWalletState();
   const { isDemoMode } = useDemoMode();
+  const { tokens: availableTokens, isLoading: tokensLoading } = useTokens();
+  const tokens = availableTokens as Array<{
+    address: string;
+    symbol: string;
+    name: string;
+    decimals: number;
+  }>;
 
-  const { quote, isLoading, executeSwap, isSwapping, swapError } = useSwap({
-    fromToken,
-    toToken,
-    amount,
-    slippage,
-  });
+  // Ensure we always have tokens to display
+  const displayTokens =
+    tokens.length > 0
+      ? tokens
+      : [
+          {
+            address: "0x0000000000000000000000000000000000000000",
+            symbol: "ETH",
+            name: "Ethereum",
+            decimals: 18,
+          },
+          {
+            address: "0xA0b86a33E6441E5BA2AD8D73B8E76C6B72C2E6eF",
+            symbol: "USDC",
+            name: "USD Coin",
+            decimals: 6,
+          },
+          {
+            address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+            symbol: "USDT",
+            name: "Tether USD",
+            decimals: 6,
+          },
+        ];
 
-  const availableTokens = TOKENS[chainId as keyof typeof TOKENS] || TOKENS[1];
+  const { quote, isLoading, executeSwap, isSwapping, swapError, swapResult } =
+    useSwap({
+      fromToken,
+      toToken,
+      amount,
+      slippage,
+    });
+
+  // Handle swap result
+  useEffect(() => {
+    if (swapResult) {
+      setSwapStatus("success");
+      toast.success(
+        `Swap successful! Transaction: ${swapResult.hash.slice(0, 10)}...`,
+      );
+      setAmount("");
+      // Reset status after 3 seconds
+      setTimeout(() => setSwapStatus("idle"), 3000);
+    }
+  }, [swapResult]);
+
+  // Handle swap error
+  useEffect(() => {
+    if (swapError) {
+      setSwapStatus("error");
+      toast.error(`Swap failed: ${swapError.message}`);
+      // Reset status after 3 seconds
+      setTimeout(() => setSwapStatus("idle"), 3000);
+    }
+  }, [swapError]);
 
   const handleSwap = async () => {
     if (!isConnected && !isDemoMode) {
@@ -91,20 +106,29 @@ export const SwapInterface: React.FC = () => {
       return;
     }
 
+    if (fromToken === toToken) {
+      toast.error("Cannot swap the same token");
+      return;
+    }
+
     try {
+      setSwapStatus("pending");
+
       if (isDemoMode) {
         // Simulate swap in demo mode
         await new Promise((resolve) => setTimeout(resolve, 2000));
         toast.success("Demo swap executed successfully!");
         setAmount("");
+        setSwapStatus("success");
+        setTimeout(() => setSwapStatus("idle"), 3000);
       } else {
         await executeSwap();
-        toast.success("Swap executed successfully!");
-        setAmount("");
       }
     } catch (error) {
       console.error("Swap error:", error);
+      setSwapStatus("error");
       toast.error("Swap failed. Please try again.");
+      setTimeout(() => setSwapStatus("idle"), 3000);
     }
   };
 
@@ -115,7 +139,27 @@ export const SwapInterface: React.FC = () => {
   };
 
   const isSwapDisabled =
-    !fromToken || !toToken || !amount || isLoading || isSwapping;
+    !fromToken ||
+    !toToken ||
+    !amount ||
+    isLoading ||
+    isSwapping ||
+    swapStatus === "pending";
+
+  const getSwapButtonText = () => {
+    if (swapStatus === "pending") return "Swapping...";
+    if (swapStatus === "success") return "Swap Successful!";
+    if (swapStatus === "error") return "Swap Failed";
+    if (isDemoMode) return "Demo Swap";
+    return "Swap";
+  };
+
+  const getSwapButtonIcon = () => {
+    if (swapStatus === "success")
+      return <CheckCircle className="w-4 h-4 mr-2" />;
+    if (swapStatus === "error") return <XCircle className="w-4 h-4 mr-2" />;
+    return <Zap className="w-4 h-4 mr-2" />;
+  };
 
   return (
     <div className="max-w-md mx-auto">
@@ -183,15 +227,19 @@ export const SwapInterface: React.FC = () => {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="text-right pr-3 pl-28"
+                disabled={isSwapping}
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                 <select
                   value={fromToken}
                   onChange={(e) => setFromToken(e.target.value)}
                   className="border-none bg-transparent focus:outline-none text-sm font-medium w-20"
+                  disabled={isSwapping || tokensLoading}
                 >
-                  <option value="">Select</option>
-                  {availableTokens.map((token) => (
+                  <option value="">
+                    {tokensLoading ? "Loading..." : "Select"}
+                  </option>
+                  {displayTokens.map((token) => (
                     <option key={token.address} value={token.address}>
                       {token.symbol}
                     </option>
@@ -205,8 +253,9 @@ export const SwapInterface: React.FC = () => {
           <div className="flex justify-center">
             <motion.button
               whileHover={{ rotate: 180 }}
-              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
+              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
               onClick={swapTokens}
+              disabled={isSwapping}
             >
               <ArrowUpDown className="w-4 h-4" />
             </motion.button>
@@ -228,9 +277,12 @@ export const SwapInterface: React.FC = () => {
                   value={toToken}
                   onChange={(e) => setToToken(e.target.value)}
                   className="border-none bg-transparent focus:outline-none text-sm font-medium w-20"
+                  disabled={isSwapping || tokensLoading}
                 >
-                  <option value="">Select</option>
-                  {availableTokens.map((token) => (
+                  <option value="">
+                    {tokensLoading ? "Loading..." : "Select"}
+                  </option>
+                  {displayTokens.map((token) => (
                     <option key={token.address} value={token.address}>
                       {token.symbol}
                     </option>
@@ -250,10 +302,9 @@ export const SwapInterface: React.FC = () => {
               <div className="flex justify-between text-sm">
                 <span>Rate</span>
                 <span>
-                  1{" "}
-                  {availableTokens.find((t) => t.address === fromToken)?.symbol}{" "}
+                  1 {displayTokens.find((t) => t.address === fromToken)?.symbol}{" "}
                   = {quote.toAmount}{" "}
-                  {availableTokens.find((t) => t.address === toToken)?.symbol}
+                  {displayTokens.find((t) => t.address === toToken)?.symbol}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -261,8 +312,12 @@ export const SwapInterface: React.FC = () => {
                 <span>{slippage}%</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Network Fee</span>
-                <span>{isDemoMode ? "~$0.50 (Demo)" : "~$5.23"}</span>
+                <span>Price Impact</span>
+                <span>{quote.priceImpact?.toFixed(2) || "0.00"}%</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Estimated Gas</span>
+                <span>{quote.estimatedGas || "~150,000"}</span>
               </div>
             </motion.div>
           )}
@@ -283,9 +338,10 @@ export const SwapInterface: React.FC = () => {
             disabled={isSwapDisabled}
             className="w-full"
             size="lg"
+            variant={swapStatus === "error" ? "danger" : "primary"}
           >
-            <Zap className="w-4 h-4 mr-2" />
-            {isDemoMode ? "Demo Swap" : "Swap"}
+            {getSwapButtonIcon()}
+            {getSwapButtonText()}
           </Button>
         </div>
       </Card>

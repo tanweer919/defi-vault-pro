@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Card } from "@/components/ui/Card";
 import { PortfolioData } from "@/lib/types";
 import { useWalletState } from "@/lib/hooks/useWalletState";
+import { useAnalytics } from "@/lib/hooks/useAnalytics";
 import { useDemoMode } from "@/lib/hooks/useDemoMode";
 import {
   BarChart,
@@ -15,7 +15,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Wallet, AlertCircle, BarChart3 } from "lucide-react";
+import { Wallet, BarChart3 } from "lucide-react";
 
 interface ProfitLossAnalysisProps {
   timeRange: string;
@@ -26,42 +26,9 @@ export const ProfitLossAnalysis: React.FC<ProfitLossAnalysisProps> = ({
   timeRange,
   portfolioData,
 }) => {
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const { isConnected } = useWalletState();
   const { isDemoMode } = useDemoMode();
-
-  useEffect(() => {
-    if (!portfolioData?.totalValue || portfolioData.totalValue === 0) {
-      setData([]);
-      setLoading(false);
-      return;
-    }
-
-    // Generate P&L data based on actual portfolio value
-    const generatePLData = () => {
-      const periods =
-        timeRange === "1d"
-          ? 6
-          : timeRange === "7d"
-          ? 7
-          : timeRange === "30d"
-          ? 30
-          : 12;
-
-      return Array.from({ length: periods }, (_, i) => ({
-        period: `Period ${i + 1}`,
-        profit: Math.random() * portfolioData.totalValue * 0.1,
-        loss: Math.random() * portfolioData.totalValue * 0.05,
-      }));
-    };
-
-    setLoading(true);
-    setTimeout(() => {
-      setData(generatePLData());
-      setLoading(false);
-    }, 500);
-  }, [timeRange, portfolioData]);
+  const { analytics, isLoading } = useAnalytics(portfolioData, timeRange);
 
   // Show wallet connection prompt if not connected AND not in demo mode
   if (!isConnected && !isDemoMode) {
@@ -82,8 +49,8 @@ export const ProfitLossAnalysis: React.FC<ProfitLossAnalysisProps> = ({
     );
   }
 
-  // Show empty state if no portfolio data
-  if (!portfolioData?.totalValue || portfolioData.totalValue === 0) {
+  // Show empty state if no portfolio data and not in demo mode
+  if (!portfolioData?.totalValue && !isDemoMode) {
     return (
       <Card className="p-6" gradient>
         <div className="flex items-center justify-center h-64">
@@ -105,13 +72,13 @@ export const ProfitLossAnalysis: React.FC<ProfitLossAnalysisProps> = ({
     <Card className="p-6" gradient>
       <h3 className="text-xl font-semibold mb-4">Profit & Loss Analysis</h3>
 
-      {loading ? (
+      {isLoading ? (
         <div className="flex justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
+          <BarChart data={analytics.profitLossData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="period" />
             <YAxis />
