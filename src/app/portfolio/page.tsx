@@ -16,7 +16,6 @@ import {
   Bell,
   RefreshCw,
   Download,
-  Filter,
 } from "lucide-react";
 
 export default function PortfolioPage() {
@@ -47,28 +46,32 @@ export default function PortfolioPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4"
+        className="flex flex-col gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Portfolio</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Portfolio
+          </h1>
+          <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
             Track and manage your DeFi investments across all chains
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <ChainSelector />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="order-2 sm:order-1">
+            <ChainSelector />
+          </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 order-1 sm:order-2">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm w-full sm:w-auto"
             >
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -80,7 +83,7 @@ export default function PortfolioPage() {
             <select
               value={filterBy}
               onChange={(e) => setFilterBy(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm w-full sm:w-auto"
             >
               {filterOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -88,32 +91,55 @@ export default function PortfolioPage() {
                 </option>
               ))}
             </select>
+
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setViewMode(viewMode === "grid" ? "list" : "grid")
+                }
+                className="flex-1 sm:flex-none"
+              >
+                {viewMode === "grid" ? "List" : "Grid"}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Refresh</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Export</span>
+              </Button>
+            </div>
           </div>
-
-          <Button variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
-
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
         </div>
       </motion.div>
 
       {/* Navigation Tabs */}
-      <Card className="p-2" gradient>
+      <Card className="p-2 sm:p-3" gradient>
         <div className="flex flex-wrap gap-2">
           {tabs.map((tab) => (
             <Button
               key={tab.id}
               variant={activeTab === tab.id ? "primary" : "ghost"}
               onClick={() => setActiveTab(tab.id)}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 text-sm sm:text-base"
+              size="sm"
             >
               <tab.icon className="w-4 h-4" />
-              <span>{tab.label}</span>
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.label.charAt(0)}</span>
             </Button>
           ))}
         </div>

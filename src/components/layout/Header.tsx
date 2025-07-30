@@ -6,6 +6,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Wallet, TrendingUp, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { MobileNav } from "./MobileNav";
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -33,13 +34,16 @@ export const Header: React.FC = () => {
             >
               <Wallet className="w-5 h-5 text-white" />
             </motion.div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hidden sm:block">
               DefiVault Pro
+            </span>
+            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent sm:hidden">
+              DVP
             </span>
           </Link>
 
-          {/* Navigation */}
-          <nav className="flex space-x-8">
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex space-x-8">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -59,8 +63,13 @@ export const Header: React.FC = () => {
             })}
           </nav>
 
-          {/* Connect Button */}
-          <ConnectButton />
+          {/* Desktop Connect Button and Mobile Menu */}
+          <div className="flex items-center space-x-4">
+            <div className="hidden sm:block">
+              <ConnectButton />
+            </div>
+            <MobileNav />
+          </div>
         </div>
       </div>
     </motion.header>
