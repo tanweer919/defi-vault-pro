@@ -1,0 +1,28 @@
+/* Asset Allocation Component Styles */
+
+.progress-bar {
+  transition: width 0.5s ease-in-out;
+}
+
+.progress-bar-diversification {
+  width: var(--diversification-width);
+}
+
+.progress-bar-risk {
+  width: 60%;
+}
+
+.chart-bar {
+  width: var(--bar-width);
+}
+
+/* Dynamic width classes */
+.dynamic-width {
+  width: var(--dynamic-width);
+}
+
+/* Price alert progress bar */
+.alert-progress {
+  width: var(--progress-width);
+  transition: width 0.3s ease-in-out;
+}

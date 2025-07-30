@@ -88,7 +88,7 @@ export const usePortfolio = () => {
               decimals: 18,
               price: price,
               value: calculatedValue,
-              logo: undefined,
+              logo: "https://assets.coingecko.com/coins/images/279/small/ethereum.png",
             };
           }
         }),
