@@ -335,3 +335,96 @@ export interface UserSettings {
     email: boolean;
   };
 }
+
+// Market stats types
+export interface MarketStatsPair {
+  pair: string;
+  volume: string;
+  orders: number;
+}
+
+export interface MarketStatsGlobal {
+  totalOrders: number;
+  activeOrders: number;
+  totalVolume24h: string;
+  totalValueLocked: string;
+  averageOrderSize: string;
+  topPairs: MarketStatsPair[];
+}
+
+export interface MarketStats {
+  global: MarketStatsGlobal;
+  chain?: {
+    orders: number;
+    volume24h: string;
+    activePairs: number;
+  };
+  timestamp: string;
+}
+
+// Order book types
+export interface OrderBookStats {
+  bestBid: string;
+  bestAsk: string;
+  spread: string;
+}
+
+export interface OrderBook {
+  stats: OrderBookStats;
+  bids: Array<[string, string]>; // [price, amount]
+  asks: Array<[string, string]>; // [price, amount]
+}
+
+// Market depth types
+export interface MarketDepth {
+  totalBidVolume: string;
+  totalAskVolume: string;
+  marketPrice: string;
+  depth: Array<{
+    price: string;
+    cumulativeVolume: string;
+    side: "bid" | "ask";
+  }>;
+}
+
+// Optimal pricing types
+export interface OptimalPricingStrategy {
+  name: string;
+  description: string;
+  estimatedSavings: string;
+  confidence: number;
+  suggestedPrice: string;
+  expectedFillTime: string;
+  fillProbability: string;
+}
+
+export interface OptimalPricingRecommendation {
+  type: string;
+  title: string;
+  description: string;
+  impact: string;
+  priority: "high" | "medium" | "low";
+}
+
+export interface OptimalPricing {
+  strategies: OptimalPricingStrategy[];
+  recommendations: OptimalPricingRecommendation[];
+  currentPrice: string;
+  optimalPrice: string;
+}
+
+// Protocol fee types
+export interface ProtocolFeeStructure {
+  makerFee: string;
+  takerFee: string;
+  volumeDiscount?: string;
+}
+
+export interface ProtocolFee {
+  protocolFee: {
+    percentage: string;
+    minimumFee: string;
+  };
+  feeStructure: ProtocolFeeStructure;
+  estimatedCost: string;
+}

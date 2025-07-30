@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { chainId: string } },
+  { params }: { params: Promise<{ chainId: string }> },
 ) {
   try {
-    const { chainId } = params;
+    const { chainId } = await params;
     const orderData = await request.json();
     const demo = orderData.demo || process.env.NODE_ENV === "development";
 

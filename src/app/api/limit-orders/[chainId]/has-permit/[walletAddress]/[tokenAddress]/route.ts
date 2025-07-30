@@ -5,11 +5,15 @@ export async function GET(
   {
     params,
   }: {
-    params: { chainId: string; walletAddress: string; tokenAddress: string };
+    params: Promise<{
+      chainId: string;
+      walletAddress: string;
+      tokenAddress: string;
+    }>;
   },
 ) {
   try {
-    const { chainId, walletAddress, tokenAddress } = params;
+    const { chainId, walletAddress, tokenAddress } = await params;
     const { searchParams } = new URL(request.url);
     const demo = searchParams.get("demo") === "true";
 

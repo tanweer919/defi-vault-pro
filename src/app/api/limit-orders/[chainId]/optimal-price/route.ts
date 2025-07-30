@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { chainId: string } },
+  { params }: { params: Promise<{ chainId: string }> },
 ) {
   try {
-    const { chainId } = params;
+    const { chainId } = await params;
     const { searchParams } = new URL(request.url);
 
     const fromToken = searchParams.get("fromToken");

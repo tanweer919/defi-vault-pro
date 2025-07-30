@@ -79,12 +79,6 @@ export const DeFiAnalytics: React.FC = () => {
     }
   }, [address, chainId, timeRange, loadAnalyticsData]);
 
-  useEffect(() => {
-    if (transactions.length > 0) {
-      calculateAnalytics();
-    }
-  }, [transactions, calculateAnalytics]);
-
   const calculateAnalytics = useCallback(() => {
     const swaps = transactions.filter((tx) => tx.type === "swap");
 
@@ -241,6 +235,12 @@ export const DeFiAnalytics: React.FC = () => {
       uniqueTokens: uniqueTokens.size,
     });
   }, [transactions]);
+
+  useEffect(() => {
+    if (transactions.length > 0) {
+      calculateAnalytics();
+    }
+  }, [transactions, calculateAnalytics]);
 
   if (!address) {
     return (

@@ -18,6 +18,15 @@ import {
 } from "lucide-react";
 import { useLimitOrders } from "@/lib/hooks/useLimitOrders";
 import { useWalletState } from "@/lib/hooks/useWalletState";
+import {
+  MarketStats,
+  OrderBook,
+  MarketDepth,
+  OptimalPricing,
+  OptimalPricingStrategy,
+  OptimalPricingRecommendation,
+  ProtocolFee,
+} from "@/lib/types";
 import { useDemoMode } from "@/lib/hooks/useDemoMode";
 import toast from "react-hot-toast";
 
@@ -341,26 +350,18 @@ export const LimitOrderInterface: React.FC = () => {
   const [showOrderBook, setShowOrderBook] = useState(false);
   const [showMarketDepth, setShowMarketDepth] = useState(false);
   const [isCalculatingPrice, setIsCalculatingPrice] = useState(false);
-  const [marketStatsData, setMarketStatsData] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
-  const [orderBookData, setOrderBookData] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
-  const [marketDepthData, setMarketDepthData] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
-  const [optimalPricingData, setOptimalPricingData] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
-  const [protocolFeeData, setProtocolFeeData] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
+  const [marketStatsData, setMarketStatsData] = useState<MarketStats | null>(
+    null,
+  );
+  const [orderBookData, setOrderBookData] = useState<OrderBook | null>(null);
+  const [marketDepthData, setMarketDepthData] = useState<MarketDepth | null>(
+    null,
+  );
+  const [optimalPricingData, setOptimalPricingData] =
+    useState<OptimalPricing | null>(null);
+  const [protocolFeeData, setProtocolFeeData] = useState<ProtocolFee | null>(
+    null,
+  );
   const [gasEstimateData, setGasEstimateData] = useState<Record<
     string,
     unknown
@@ -962,7 +963,7 @@ export const LimitOrderInterface: React.FC = () => {
                       onClick={async () => {
                         try {
                           const stats = await getMarketStats();
-                          setMarketStatsData(stats);
+                          setMarketStatsData(stats as unknown as MarketStats);
                           toast.success("Market stats updated");
                         } catch {
                           toast.error("Failed to load market stats");
@@ -1014,7 +1015,7 @@ export const LimitOrderInterface: React.FC = () => {
                             sellToken,
                             buyToken,
                           );
-                          setOrderBookData(orderBook);
+                          setOrderBookData(orderBook as unknown as OrderBook);
                           setShowOrderBook(true);
                           toast.success("Order book loaded");
                         } catch {
@@ -1068,7 +1069,7 @@ export const LimitOrderInterface: React.FC = () => {
                             buyToken,
                             10,
                           );
-                          setMarketDepthData(depth);
+                          setMarketDepthData(depth as unknown as MarketDepth);
                           setShowMarketDepth(true);
                           toast.success("Market depth loaded");
                         } catch {
@@ -1123,7 +1124,9 @@ export const LimitOrderInterface: React.FC = () => {
                           buyToken,
                           sellAmount,
                         );
-                        setOptimalPricingData(pricing);
+                        setOptimalPricingData(
+                          pricing as unknown as OptimalPricing,
+                        );
                         toast.success("Pricing analysis complete");
                       } catch {
                         toast.error("Failed to analyze pricing");
@@ -1137,7 +1140,7 @@ export const LimitOrderInterface: React.FC = () => {
                 {optimalPricingData && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {optimalPricingData.strategies?.map(
-                      (strategy: any, index: number) => (
+                      (strategy: OptimalPricingStrategy, index: number) => (
                         <div
                           key={index}
                           className="p-3 bg-white rounded-lg border"
@@ -1189,13 +1192,15 @@ export const LimitOrderInterface: React.FC = () => {
                     </h5>
                     <ul className="space-y-1 text-xs text-gray-600">
                       {optimalPricingData.recommendations.map(
-                        (rec: string, index: number) => (
+                        (rec: OptimalPricingRecommendation, index: number) => (
                           <li
                             key={index}
                             className="flex items-start space-x-2"
                           >
                             <span className="text-blue-500 mt-1">•</span>
-                            <span>{rec}</span>
+                            <span>
+                              {rec.title}: {rec.description}
+                            </span>
                           </li>
                         ),
                       )}
@@ -1217,7 +1222,7 @@ export const LimitOrderInterface: React.FC = () => {
                       onClick={async () => {
                         try {
                           const fees = await getProtocolFee();
-                          setProtocolFeeData(fees);
+                          setProtocolFeeData(fees as unknown as ProtocolFee);
                           toast.success("Fee information updated");
                         } catch {
                           toast.error("Failed to load fee info");
