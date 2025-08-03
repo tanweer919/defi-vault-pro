@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +10,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const demo = searchParams.get("demo") === "true";
 
-    if (demo || process.env.NODE_ENV === "development") {
+    if (demo) {
       // Return mock protocol fee for demo mode
       return NextResponse.json({
         protocolFee: {
@@ -78,18 +79,16 @@ export async function GET(
     // In production, this would call the actual 1inch API
     const apiUrl = `https://api.1inch.io/v5.2/${chainId}/limit-order/protocol-fee`;
 
-    const response = await fetch(apiUrl, {
+    const response = await axios.get(apiUrl, {
       headers: {
         Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
         "Content-Type": "application/json",
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`1inch API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = response.data;
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error getting protocol fee:", error);

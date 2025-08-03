@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 export async function GET(
   request: NextRequest,
@@ -17,7 +18,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const demo = searchParams.get("demo") === "true";
 
-    if (demo || process.env.NODE_ENV === "development") {
+    if (demo) {
       // Return mock active orders with permit for demo mode
       const mockOrders = Array.from(
         { length: Math.floor(Math.random() * 5) + 1 },
@@ -106,18 +107,16 @@ export async function GET(
     // In production, this would call the actual 1inch API
     const apiUrl = `https://api.1inch.io/v5.2/${chainId}/limit-order/has-permit/${walletAddress}/${tokenAddress}`;
 
-    const response = await fetch(apiUrl, {
+    const response = await axios.get(apiUrl, {
       headers: {
         Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
         "Content-Type": "application/json",
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`1inch API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = response.data;
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error getting orders with permit:", error);

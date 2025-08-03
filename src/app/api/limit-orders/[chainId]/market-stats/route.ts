@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 export async function GET(
   request: NextRequest,
@@ -12,7 +13,7 @@ export async function GET(
     const quoteToken = searchParams.get("quoteToken");
     const demo = searchParams.get("demo") === "true";
 
-    if (demo || process.env.NODE_ENV === "development") {
+    if (demo) {
       // Return mock market stats for demo mode
       const now = Date.now();
 
@@ -109,18 +110,16 @@ export async function GET(
       queryParams.append("quoteToken", quoteToken);
     }
 
-    const response = await fetch(`${apiUrl}?${queryParams}`, {
+    const response = await axios.get(`${apiUrl}?${queryParams}`, {
       headers: {
         Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
         "Content-Type": "application/json",
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`1inch API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = response.data;
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error getting market stats:", error);

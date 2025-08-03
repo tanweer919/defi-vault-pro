@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 export async function GET(
   request: NextRequest,
@@ -11,43 +12,31 @@ export async function GET(
 
     if (address) {
       // Get specific token metadata
-      const response = await fetch(
+      const response = await axios.get(
         `https://api.1inch.dev/token/v1.2/${chainId}/metadata?address=${address}`,
         {
           headers: {
             Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
             "Content-Type": "application/json",
           },
-          next: { revalidate: 3600 }, // Cache for 1 hour
         },
       );
 
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch token metadata: ${response.statusText}`,
-        );
-      }
-
-      const data = await response.json();
+      const data = response.data;
       return NextResponse.json(data);
     } else {
       // Get token list
-      const response = await fetch(
+      const response = await axios.get(
         `https://api.1inch.dev/token/v1.2/${chainId}`,
         {
           headers: {
             Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
             "Content-Type": "application/json",
           },
-          next: { revalidate: 3600 }, // Cache for 1 hour
         },
       );
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch token list: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = response.data;
       return NextResponse.json(data);
     }
   } catch (error: unknown) {

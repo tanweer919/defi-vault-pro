@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 export async function GET(
   request: NextRequest,
@@ -20,7 +21,7 @@ export async function GET(
       );
     }
 
-    if (demo || process.env.NODE_ENV === "development") {
+    if (demo) {
       // Return mock market depth for demo mode
       const basePrice = 3000; // Base price around $3000
       const spread = 0.001; // 0.1% spread
@@ -87,18 +88,16 @@ export async function GET(
       depth: depth.toString(),
     });
 
-    const response = await fetch(`${apiUrl}?${queryParams}`, {
+    const response = await axios.get(`${apiUrl}?${queryParams}`, {
       headers: {
         Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
         "Content-Type": "application/json",
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`1inch API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = response.data;
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error getting market depth:", error);

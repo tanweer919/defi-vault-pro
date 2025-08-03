@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 export async function GET(
   request: NextRequest,
@@ -21,7 +22,7 @@ export async function GET(
       );
     }
 
-    if (demo || process.env.NODE_ENV === "development") {
+    if (demo) {
       // Return mock optimal pricing for demo mode
       const basePrice = 3000;
       const marketPrice = basePrice + (Math.random() - 0.5) * 100;
@@ -101,18 +102,16 @@ export async function GET(
       slippage: slippage.toString(),
     });
 
-    const response = await fetch(`${apiUrl}?${queryParams}`, {
+    const response = await axios.get(`${apiUrl}?${queryParams}`, {
       headers: {
         Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
         "Content-Type": "application/json",
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`1inch API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = response.data;
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error getting optimal pricing:", error);

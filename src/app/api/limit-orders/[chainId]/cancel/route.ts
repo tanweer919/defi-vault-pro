@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 const ONEINCH_API_BASE = "https://api.1inch.dev";
 
@@ -43,22 +44,16 @@ export async function DELETE(
       );
     }
 
-    const response = await fetch(
+    const response = await axios.delete(
       `${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/order/${orderId}`,
       {
-        method: "DELETE",
         headers: {
           Authorization: `Bearer ${API_KEY}`,
         },
       },
     );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.description || `HTTP ${response.status}`);
-    }
-
-    const result = await response.json();
+    const result = response.data;
 
     return NextResponse.json({
       success: true,

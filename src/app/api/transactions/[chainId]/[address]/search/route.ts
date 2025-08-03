@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 const ONEINCH_CONFIG = {
   apiKey: process.env.ONEINCH_API_KEY,
@@ -105,7 +106,7 @@ async function searchTransactionHistory(
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-      const response = await fetch(endpoint, {
+      const response = await axios.get(endpoint, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${ONEINCH_CONFIG.apiKey}`,
@@ -118,16 +119,10 @@ async function searchTransactionHistory(
 
       clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        if (response.status === 429 && attempt < maxRetries) {
-          console.warn("Rate limit exceeded, waiting before retry...");
-          await new Promise((resolve) => setTimeout(resolve, 3000 * attempt));
-          continue;
-        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = response.data;
 
       if (!data.items) {
         console.warn(

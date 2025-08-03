@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 export async function GET(
   request: NextRequest,
@@ -30,26 +31,17 @@ export async function GET(
       ...Object.fromEntries(searchParams.entries()),
     });
 
-    const response = await fetch(
+    const response = await axios.get(
       `https://api.1inch.dev/fusion/quote/v1.0/${chainId}?${queryParams}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
           "Content-Type": "application/json",
         },
-        next: { revalidate: 10 }, // Cache for 10 seconds
       },
     );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("1inch API error:", errorData);
-      throw new Error(
-        `1inch API error: ${response.status} ${response.statusText}`,
-      );
-    }
-
-    const data = await response.json();
+    const data = response.data;
 
     // Format the response for the frontend
     const formattedResponse = {
