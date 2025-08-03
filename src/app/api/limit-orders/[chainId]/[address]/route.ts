@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 const ONEINCH_API_BASE = "https://api.1inch.dev";
 
@@ -69,17 +70,13 @@ export async function GET(
     const url = new URL(`${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/orders`);
     url.searchParams.set("maker", address);
 
-    const response = await fetch(url.toString(), {
+    const response = await axios.get(url.toString(), {
       headers: {
         Authorization: `Bearer ${API_KEY}`,
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const result = await response.json();
+    const result = response.data;
     return NextResponse.json(result);
   } catch (error: unknown) {
     console.error("Fetch user limit orders API error:", error);

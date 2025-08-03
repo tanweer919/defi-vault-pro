@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 export async function POST(
   request: NextRequest,
@@ -7,7 +8,7 @@ export async function POST(
   try {
     const { chainId } = await params;
     const orderData = await request.json();
-    const demo = orderData.demo || process.env.NODE_ENV === "development";
+    const demo = orderData.demo;
 
     if (demo) {
       // Return mock gas estimate for demo mode
@@ -90,7 +91,7 @@ export async function POST(
     // In production, this would call the actual 1inch API
     const apiUrl = `https://api.1inch.io/v5.2/${chainId}/limit-order/gas-estimate`;
 
-    const response = await fetch(apiUrl, {
+    const response = await axios.get(apiUrl, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
@@ -99,11 +100,9 @@ export async function POST(
       body: JSON.stringify(orderData),
     });
 
-    if (!response.ok) {
-      throw new Error(`1inch API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = response.data;
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error getting gas estimate:", error);

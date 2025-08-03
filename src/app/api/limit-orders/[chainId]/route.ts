@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 const ONEINCH_API_BASE = "https://api.1inch.dev";
 const SUPPORTED_CHAINS = ["1", "137", "56", "42161"]; // Ethereum, Polygon, BSC, Arbitrum
@@ -62,17 +63,13 @@ export async function GET(
       url.searchParams.set("maker", maker);
     }
 
-    const response = await fetch(url.toString(), {
+    const response = await axios.get(url.toString(), {
       headers: {
         Authorization: `Bearer ${API_KEY}`,
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const result = await response.json();
+    const result = response.data;
     return NextResponse.json(result);
   } catch (error: unknown) {
     console.error("Fetch limit orders API error:", error);
@@ -181,24 +178,18 @@ export async function POST(
       ...(expiry && { expiry }),
     };
 
-    const response = await fetch(
+    const response = await axios.post(
       `${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/order`,
+      oneInchOrderData,
       {
-        method: "POST",
         headers: {
           Authorization: `Bearer ${API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(oneInchOrderData),
       },
     );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.description || `HTTP ${response.status}`);
-    }
-
-    const result = await response.json();
+    const result = response.data;
 
     return NextResponse.json({
       success: true,

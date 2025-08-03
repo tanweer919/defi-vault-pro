@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 export async function GET(
   request: NextRequest,
@@ -7,22 +8,17 @@ export async function GET(
   try {
     const { chainId, address } = await params;
 
-    const response = await fetch(
+    const response = await axios.get(
       `https://api.1inch.dev/balance/v1.2/${chainId}/balances/${address}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
           "Content-Type": "application/json",
         },
-        next: { revalidate: 30 }, // Cache for 30 seconds
       },
     );
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch balances: ${response.statusText}`);
-    }
-
-    const data = await response.json();
+    const data = response.data;
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error("Balance API error:", error);

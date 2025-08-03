@@ -6,10 +6,14 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { LimitOrderInterface } from "@/components/features/LimitOrders";
 import { ActiveOrders } from "@/components/features/ActiveOrders";
+import { RealTimeOrderBook } from "@/components/features/RealTimeOrderBook";
 import { Plus, List, TrendingUp } from "lucide-react";
 
 export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState("create");
+
+  // Default chain for the order book
+  const defaultChainId = 1; // Ethereum mainnet
 
   const tabs = [
     { id: "create", label: "Create Order", icon: Plus },
@@ -27,7 +31,7 @@ export default function OrdersPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Limit Orders</h1>
           <p className="text-gray-600 mt-2">
-            Create and manage your limit orders
+            Create and manage your limit orders with real-time market data
           </p>
         </div>
       </motion.div>
@@ -54,53 +58,23 @@ export default function OrdersPage() {
         <div className="lg:col-span-2">
           {activeTab === "create" && <LimitOrderInterface />}
           {activeTab === "active" && <ActiveOrders />}
-          {activeTab === "history" && <div>Order History Component</div>}
+          {activeTab === "history" && (
+            <Card className="p-6" gradient>
+              <h3 className="text-lg font-semibold mb-4">Order History</h3>
+              <p className="text-gray-600">
+                Order history component coming soon...
+              </p>
+            </Card>
+          )}
         </div>
 
-        {/* Order Book */}
-        <Card className="p-6" gradient>
-          <h3 className="text-lg font-semibold mb-4">Order Book</h3>
-          <div className="space-y-2">
-            <div className="text-sm text-gray-600 grid grid-cols-3 gap-2">
-              <span>Price</span>
-              <span>Amount</span>
-              <span>Total</span>
-            </div>
-
-            {/* Sell Orders */}
-            <div className="space-y-1">
-              {[...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className="text-sm grid grid-cols-3 gap-2 text-red-600"
-                >
-                  <span>$2,{1850 + i * 10}</span>
-                  <span>0.{5 - i}23</span>
-                  <span>$1,{234 + i * 50}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Current Price */}
-            <div className="py-2 border-t border-b text-center font-semibold">
-              $2,845.67
-            </div>
-
-            {/* Buy Orders */}
-            <div className="space-y-1">
-              {[...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className="text-sm grid grid-cols-3 gap-2 text-green-600"
-                >
-                  <span>$2,{840 - i * 10}</span>
-                  <span>0.{i + 1}45</span>
-                  <span>$1,{200 - i * 30}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
+        {/* Real-Time Order Book */}
+        <div className="lg:col-span-1">
+          <RealTimeOrderBook
+            chainId={defaultChainId}
+            className="h-fit sticky top-6"
+          />
+        </div>
       </div>
     </div>
   );

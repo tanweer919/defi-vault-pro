@@ -13,6 +13,13 @@ export function formatNumber(num: number): string {
   return new Intl.NumberFormat().format(num);
 }
 
+export function formatPreciseNumber(num: number, decimals: number = 2): string {
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: decimals,
+  }).format(num);
+}
+
 export function formatCurrency(amount: number, currency = "USD"): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",

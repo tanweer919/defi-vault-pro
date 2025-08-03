@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 // 1inch History API configuration - much better for DeFi transaction analysis
 const ONEINCH_CONFIG = {
@@ -258,48 +259,36 @@ async function fetchOneInchHistory(
       console.log(`Endpoint: ${endpoint}`);
 
       const timeoutMs = baseTimeout * attempt;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-      const requestConfig: RequestInit = {
-        method,
-        headers: {
-          Authorization: `Bearer ${ONEINCH_CONFIG.apiKey}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        signal: controller.signal,
-      };
-
-      // Add query parameters for GET request
+      let response;
       if (method === "GET") {
         const url = new URL(endpoint);
         url.searchParams.set("chainId", chainId);
         url.searchParams.set("limit", limit.toString());
-        endpoint = url.toString();
-      } else if (body) {
-        requestConfig.body = JSON.stringify(body);
+        response = await axios.get(url.toString(), {
+          headers: {
+            Authorization: `Bearer ${ONEINCH_CONFIG.apiKey}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          timeout: timeoutMs,
+        });
+      } else {
+        response = await axios.post(endpoint, body, {
+          headers: {
+            Authorization: `Bearer ${ONEINCH_CONFIG.apiKey}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          timeout: timeoutMs,
+        });
       }
-
-      const response = await fetch(endpoint, requestConfig);
-      clearTimeout(timeoutId);
 
       console.log(
         `1inch API response status: ${response.status} (${chainConfig.name})`,
       );
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          console.warn("Rate limit exceeded, waiting before retry...");
-          if (attempt < maxRetries) {
-            await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
-            continue;
-          }
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data: OneInchHistoryResponse = await response.json();
+      const data: OneInchHistoryResponse = response.data;
 
       if (!data.items) {
         console.warn(`1inch API returned no items for ${chainConfig.name}`);

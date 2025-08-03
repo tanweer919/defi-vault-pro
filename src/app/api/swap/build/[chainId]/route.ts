@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 interface SwapRequestBody {
   src: string;
@@ -43,28 +44,18 @@ export async function POST(
       ...body,
     };
 
-    const response = await fetch(
+    const response = await axios.post(
       `https://api.1inch.dev/fusion/swap/v1.0/${chainId}`,
+      swapData,
       {
-        method: "POST",
         headers: {
           Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(swapData),
-        next: { revalidate: 0 }, // No cache for swap transactions
       },
     );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("1inch Fusion Plus API error:", errorData);
-      throw new Error(
-        `1inch Fusion Plus API error: ${response.status} ${response.statusText}`,
-      );
-    }
-
-    const data = await response.json();
+    const data = response.data;
 
     // Format the response for the frontend
     const formattedResponse = {
