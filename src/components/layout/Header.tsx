@@ -3,7 +3,14 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Wallet, TrendingUp, BarChart3 } from "lucide-react";
+import {
+  Wallet,
+  ArrowLeftRight,
+  Briefcase,
+  ClipboardList,
+  Clock,
+  LineChart,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MobileNav } from "./MobileNav";
@@ -12,9 +19,11 @@ export const Header: React.FC = () => {
   const pathname = usePathname();
 
   const navigation = [
-    { name: "Portfolio", href: "/portfolio", icon: BarChart3 },
-    { name: "Swap", href: "/swap", icon: TrendingUp },
-    { name: "Analytics", href: "/analytics", icon: BarChart3 },
+    { name: "Portfolio", href: "/portfolio", icon: Briefcase },
+    { name: "Swap", href: "/swap", icon: ArrowLeftRight },
+    { name: "Orders", href: "/orders", icon: ClipboardList },
+    { name: "History", href: "/history", icon: Clock },
+    { name: "Analytics", href: "/analytics", icon: LineChart },
   ];
 
   return (
