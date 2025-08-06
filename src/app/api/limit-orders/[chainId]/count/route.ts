@@ -11,18 +11,6 @@ export async function GET(
     const { chainId } = await params;
     const { searchParams } = new URL(request.url);
 
-    // Demo mode handling
-    if (process.env.NODE_ENV === "development") {
-      const mockCount = {
-        count: 42,
-        active: 38,
-        filled: 3,
-        cancelled: 1,
-        expired: 0,
-      };
-
-      return NextResponse.json(mockCount);
-    }
 
     // Production 1inch API integration
     const API_KEY = process.env.ONEINCH_API_KEY;

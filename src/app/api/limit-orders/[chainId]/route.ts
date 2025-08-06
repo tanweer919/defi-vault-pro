@@ -36,7 +36,6 @@ export async function GET(
 
     // Demo mode - return stored demo orders
     if (
-      process.env.NODE_ENV === "development" ||
       searchParams.get("demo") === "true"
     ) {
       const orders = Array.from(demoOrders.values())
@@ -119,7 +118,7 @@ export async function POST(
     }
 
     // Demo mode handling
-    if (process.env.NODE_ENV === "development" || orderData.demo) {
+    if (orderData.demo) {
       const orderId = `demo_${Date.now()}_${Math.random()
         .toString(36)
         .substr(2, 9)}`;

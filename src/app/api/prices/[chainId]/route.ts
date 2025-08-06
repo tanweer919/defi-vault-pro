@@ -33,26 +33,6 @@ export async function GET(
   } catch (error: unknown) {
     console.error("Price API error:", error);
 
-    // Return mock prices in development
-    if (process.env.NODE_ENV === "development") {
-      const tokenList =
-        request.nextUrl.searchParams.get("tokens")?.split(",") || [];
-      const mockPrices: Record<string, number> = {};
-
-      tokenList.forEach((token) => {
-        if (token.includes("eeeeeeee")) {
-          mockPrices[token] = 2800;
-        } else if (token.includes("a0b86a33")) {
-          mockPrices[token] = 1;
-        } else if (token.includes("2260fac5")) {
-          mockPrices[token] = 45000;
-        } else {
-          mockPrices[token] = Math.random() * 100;
-        }
-      });
-
-      return NextResponse.json(mockPrices);
-    }
 
     return NextResponse.json(
       { error: "Failed to fetch prices" },
@@ -96,26 +76,6 @@ export async function POST(
   } catch (error: unknown) {
     console.error("Price API error:", error);
 
-    // Return mock prices in development
-    if (process.env.NODE_ENV === "development") {
-      const tokenList =
-        request.nextUrl.searchParams.get("tokens")?.split(",") || [];
-      const mockPrices: Record<string, number> = {};
-
-      tokenList.forEach((token) => {
-        if (token.includes("eeeeeeee")) {
-          mockPrices[token] = 2800;
-        } else if (token.includes("a0b86a33")) {
-          mockPrices[token] = 1;
-        } else if (token.includes("2260fac5")) {
-          mockPrices[token] = 45000;
-        } else {
-          mockPrices[token] = Math.random() * 100;
-        }
-      });
-
-      return NextResponse.json(mockPrices);
-    }
 
     return NextResponse.json(
       { error: "Failed to fetch prices" },

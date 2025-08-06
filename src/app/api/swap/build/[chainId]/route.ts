@@ -76,33 +76,6 @@ export async function POST(
   } catch (error: unknown) {
     console.error("Build swap transaction API error:", error);
 
-    // Return mock data in development
-    if (process.env.NODE_ENV === "development") {
-      return NextResponse.json({
-        tx: {
-          to: "0x1234567890123456789012345678901234567890",
-          data: "0x",
-          value:
-            body?.src === "0x0000000000000000000000000000000000000000"
-              ? body?.amount || "0"
-              : "0",
-          gas: "200000",
-          gasPrice: "20000000000",
-        },
-        protocols: [
-          {
-            name: "Uniswap V3",
-            part: 100,
-            fromTokenAddress:
-              body?.src || "0x0000000000000000000000000000000000000000",
-            toTokenAddress:
-              body?.dst || "0x0000000000000000000000000000000000000000",
-          },
-        ],
-        quoteId: "mock-quote-id",
-        orderId: "mock-order-id",
-      });
-    }
 
     return NextResponse.json(
       { error: "Failed to build swap transaction" },

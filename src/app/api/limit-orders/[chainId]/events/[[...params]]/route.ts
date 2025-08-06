@@ -10,34 +10,6 @@ export async function GET(
   try {
     const { chainId, orderHash } = await params;
 
-    // Demo mode handling
-    if (process.env.NODE_ENV === "development") {
-      const mockEvents = [
-        {
-          id: "event_1",
-          type: "OrderCreated",
-          orderHash: orderHash || "0x123",
-          maker: "0x1234567890123456789012345678901234567890",
-          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          blockNumber: 12345678,
-          transactionHash: "0xabc123def456",
-        },
-        {
-          id: "event_2",
-          type: "OrderFilled",
-          orderHash: orderHash || "0x123",
-          taker: "0x0987654321098765432109876543210987654321",
-          filledAmount: "500000000000000000",
-          timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-          blockNumber: 12345679,
-          transactionHash: "0xdef456abc123",
-        },
-      ];
-
-      return NextResponse.json(
-        orderHash ? mockEvents : mockEvents.slice(0, 10),
-      );
-    }
 
     // Production 1inch API integration
     const API_KEY = process.env.ONEINCH_API_KEY;

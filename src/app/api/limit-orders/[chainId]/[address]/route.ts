@@ -12,51 +12,6 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const demo = searchParams.get("demo") === "true";
 
-    // Demo mode - return mock orders
-    if (process.env.NODE_ENV === "development" || demo) {
-      const mockOrders = [
-        {
-          id: `demo_${Date.now()}_1`,
-          orderId: `demo_${Date.now()}_1`,
-          maker: address,
-          makerAsset: "0x0000000000000000000000000000000000000000",
-          takerAsset: "0xA0b86a33E6441E5BA2AD8D73B8E76C6B72C2E6eF",
-          makingAmount: "1000000000000000000", // 1 ETH
-          takingAmount: "3200000000", // 3200 USDC
-          salt: Date.now().toString(),
-          status: "active",
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          expiresAt: new Date(
-            Date.now() + 7 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-          filledAmount: "0",
-          remainingAmount: "1000000000000000000",
-          chainId: parseInt(chainId),
-          signature: `0x${"0".repeat(130)}`,
-        },
-        {
-          id: `demo_${Date.now()}_2`,
-          orderId: `demo_${Date.now()}_2`,
-          maker: address,
-          makerAsset: "0xA0b86a33E6441E5BA2AD8D73B8E76C6B72C2E6eF",
-          takerAsset: "0x0000000000000000000000000000000000000000",
-          makingAmount: "5000000000", // 5000 USDC
-          takingAmount: "1500000000000000000", // 1.5 ETH
-          salt: (Date.now() + 1).toString(),
-          status: "active",
-          createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-          expiresAt: new Date(
-            Date.now() + 3 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-          filledAmount: "0",
-          remainingAmount: "5000000000",
-          chainId: parseInt(chainId),
-          signature: `0x${"1".repeat(130)}`,
-        },
-      ];
-
-      return NextResponse.json(mockOrders);
-    }
 
     // Production 1inch API integration
     const API_KEY = process.env.ONEINCH_API_KEY;
