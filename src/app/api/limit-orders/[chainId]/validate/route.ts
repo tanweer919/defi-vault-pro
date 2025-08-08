@@ -31,17 +31,21 @@ export async function POST(
     }
 
     // In production, this would call the actual 1inch API
-    const apiUrl = `https://api.1inch.io/v5.2/${chainId}/limit-order/validate`;
+    const apiUrl = `https://api.1inch.dev/v5.2/${chainId}/limit-order/validate`;
 
-    const response = await axios.get(apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
-        "Content-Type": "application/json",
+    const response = await axios.post(
+      apiUrl,
+      orderData,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
+          "Content-Type": "application/json",
+        },
       },
-      body: JSON.stringify(orderData),
-    });
+    );
 
+    if (!response.data) {
+      throw new Error("No data received from API");
     }
 
     const data = response.data;

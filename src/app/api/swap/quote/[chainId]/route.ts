@@ -69,42 +69,6 @@ export async function GET(
   } catch (error: unknown) {
     console.error("Swap quote API error:", error);
 
-    // Return mock data in development
-    if (process.env.NODE_ENV === "development") {
-      const { searchParams } = request.nextUrl;
-      const src = searchParams.get("src");
-      const dst = searchParams.get("dst");
-      const amount = searchParams.get("amount");
-
-      return NextResponse.json({
-        fromToken: {
-          address: src,
-          symbol: "ETH",
-          decimals: 18,
-        },
-        toToken: {
-          address: dst,
-          symbol: "USDC",
-          decimals: 6,
-        },
-        fromAmount: amount,
-        toAmount: (parseFloat(amount || "0") * 1800).toString(), // Mock rate
-        protocols: [
-          {
-            name: "Uniswap V3",
-            part: 100,
-            fromTokenAddress: src,
-            toTokenAddress: dst,
-          },
-        ],
-        estimatedGas: "150000",
-        priceImpact: 0.1,
-        minimumReceived: (parseFloat(amount || "0") * 1800 * 0.99).toString(),
-        route: [],
-        quoteId: "mock-quote-id",
-      });
-    }
-
     return NextResponse.json(
       { error: "Failed to fetch swap quote" },
       { status: 500 },

@@ -1,0 +1,575 @@
+/* Enhanced Order Book Styles - Modern Design */
+.orderbook-card {
+  background: linear-gradient(145deg, #ffffff 0%, #fafbff 100%);
+  border: 1px solid #e1e8f7;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 2px 6px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont,
+    sans-serif;
+  color: #1a202c;
+  min-height: 700px;
+  backdrop-filter: blur(10px);
+}
+
+.orderbook-header {
+  background: linear-gradient(135deg, #f8faff 0%, #eef3ff 100%);
+  border-bottom: 1px solid #e1e8f7;
+  padding: 24px;
+  position: relative;
+}
+
+.orderbook-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+  background-size: 200% 100%;
+  animation: headerShimmer 3s ease-in-out infinite;
+}
+
+@keyframes headerShimmer {
+  0%,
+  100% {
+    background-position: 200% 0;
+  }
+  50% {
+    background-position: -200% 0;
+  }
+}
+
+.orderbook-title {
+  margin-bottom: 16px;
+}
+
+.orderbook-title h3 {
+  color: #1a202c;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.orderbook-title p {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.orderbook-tabs {
+  display: flex;
+  gap: 6px;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  padding: 6px;
+  border: 1px solid #cbd5e1;
+}
+
+.orderbook-tab {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.orderbook-tab::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(59, 130, 246, 0.1),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.orderbook-tab:hover::before {
+  left: 100%;
+}
+
+.orderbook-tab:hover {
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.orderbook-tab.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.orderbook-content {
+  height: calc(100% - 160px);
+  display: flex;
+  flex-direction: column;
+}
+
+.orderbook-column-headers {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 18px 24px;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  border-bottom: 2px solid #cbd5e1;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  position: relative;
+}
+
+.orderbook-column-headers::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  opacity: 0.3;
+}
+
+.orderbook-column-headers span:last-child {
+  text-align: right;
+}
+
+.orderbook-asks,
+.orderbook-bids,
+.orderbook-trades {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.orderbook-asks {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.orderbook-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(203, 213, 225, 0.4);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+
+.orderbook-row:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(248, 250, 252, 0.8) 0%,
+    rgba(241, 245, 249, 0.8) 100%
+  );
+  transform: translateX(2px);
+  box-shadow: inset 3px 0 0 rgba(59, 130, 246, 0.4);
+}
+
+.orderbook-row span:last-child {
+  text-align: right;
+}
+
+.orderbook-depth-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.15;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0 8px 8px 0;
+}
+
+.orderbook-depth-bar.ask {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(239, 68, 68, 0.8) 70%,
+    #ef4444 100%
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.orderbook-depth-bar.bid {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(34, 197, 94, 0.8) 70%,
+    #22c55e 100%
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.price.ask {
+  color: #dc2626;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(220, 38, 38, 0.1);
+}
+
+.price.bid {
+  color: #059669;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(5, 150, 105, 0.1);
+}
+
+.amount {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.total {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.orderbook-spread {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-top: 2px solid #e2e8f0;
+  border-bottom: 2px solid #e2e8f0;
+  position: relative;
+  backdrop-filter: blur(10px);
+}
+
+.orderbook-spread::before,
+.orderbook-spread::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  width: 30%;
+  height: 2px;
+  background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);
+}
+
+.orderbook-spread::before {
+  left: 0;
+}
+
+.orderbook-spread::after {
+  right: 0;
+}
+
+.spread-info {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 16px;
+}
+
+.spread-price {
+  color: #1e293b;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 2px rgba(30, 41, 59, 0.1);
+}
+
+.spread-value {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.orderbook-controls {
+  padding: 20px 24px;
+  text-align: center;
+  border-top: 2px solid #e2e8f0;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.orderbook-show-more {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.orderbook-show-more:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15), 0 2px 6px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+/* Trades specific styling */
+.orderbook-trades .orderbook-column-headers {
+  grid-template-columns: 1fr 1fr 1fr 0.8fr;
+}
+
+.orderbook-trades .orderbook-row {
+  grid-template-columns: 1fr 1fr 1fr 0.8fr;
+}
+
+.side.buy {
+  color: #00c076;
+  font-weight: 600;
+  font-size: 11px;
+  background: rgba(0, 192, 118, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-align: center;
+}
+
+.side.sell {
+  color: #f7525f;
+  font-weight: 600;
+  font-size: 11px;
+  background: rgba(247, 82, 95, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-align: center;
+}
+
+.time {
+  color: #76808f;
+  font-size: 11px;
+}
+
+/* Loading Skeleton Styles */
+.orderbook-skeleton {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-pair-selector {
+  height: 40px;
+  background: linear-gradient(90deg, #f0f2f5 25%, #e4e7ea 50%, #f0f2f5 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 6px;
+}
+
+.skeleton-tab {
+  flex: 1;
+  height: 36px;
+  background: linear-gradient(90deg, #f0f2f5 25%, #e4e7ea 50%, #f0f2f5 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 6px;
+}
+
+.orderbook-row.skeleton {
+  padding: 8px 20px;
+}
+
+.skeleton-text {
+  height: 14px;
+  background: linear-gradient(90deg, #f0f2f5 25%, #e4e7ea 50%, #f0f2f5 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+  display: block;
+}
+
+.skeleton-text.price {
+  width: 80%;
+}
+
+.skeleton-text.amount {
+  width: 70%;
+}
+
+.skeleton-text.total {
+  width: 60%;
+}
+
+.skeleton-text.spread-price {
+  width: 100px;
+  height: 18px;
+}
+
+.skeleton-text.spread-value {
+  width: 80px;
+  height: 14px;
+}
+
+.skeleton-depth-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40%;
+  background: linear-gradient(90deg, #f0f2f5 25%, #e4e7ea 50%, #f0f2f5 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  opacity: 0.3;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Loading, Error and Empty States */
+.orderbook-error,
+.orderbook-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #76808f;
+}
+
+.error-icon,
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.orderbook-error p,
+.orderbook-empty p {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e2329;
+}
+
+.orderbook-error span,
+.orderbook-empty span {
+  font-size: 14px;
+  color: #76808f;
+  margin-bottom: 20px;
+  text-align: center;
+  max-width: 300px;
+}
+
+.retry-button {
+  background: #f0b90b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background: #d9a441;
+  box-shadow: 0 2px 8px rgba(240, 185, 11, 0.3);
+}
+
+/* Custom Scrollbar */
+.orderbook-asks::-webkit-scrollbar,
+.orderbook-bids::-webkit-scrollbar,
+.orderbook-trades::-webkit-scrollbar {
+  width: 6px;
+}
+
+.orderbook-asks::-webkit-scrollbar-track,
+.orderbook-bids::-webkit-scrollbar-track,
+.orderbook-trades::-webkit-scrollbar-track {
+  background: #f1f3f6;
+  border-radius: 3px;
+}
+
+.orderbook-asks::-webkit-scrollbar-thumb,
+.orderbook-bids::-webkit-scrollbar-thumb,
+.orderbook-trades::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.orderbook-asks::-webkit-scrollbar-thumb:hover,
+.orderbook-bids::-webkit-scrollbar-thumb:hover,
+.orderbook-trades::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .orderbook-card {
+    min-height: 500px;
+  }
+
+  .orderbook-header {
+    padding: 16px;
+  }
+
+  .orderbook-row {
+    font-size: 12px;
+    padding: 6px 16px;
+  }
+
+  .orderbook-column-headers {
+    padding: 12px 16px;
+    font-size: 11px;
+  }
+
+  .spread-info {
+    gap: 16px;
+  }
+
+  .spread-price {
+    font-size: 16px;
+  }
+}
+
+/* Animation for new orders */
+@keyframes flash-green {
+  0% {
+    background-color: rgba(0, 192, 118, 0.2);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes flash-red {
+  0% {
+    background-color: rgba(247, 82, 95, 0.2);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.orderbook-row.new-bid {
+  animation: flash-green 0.6s ease-out;
+}
+
+.orderbook-row.new-ask {
+  animation: flash-red 0.6s ease-out;
+}

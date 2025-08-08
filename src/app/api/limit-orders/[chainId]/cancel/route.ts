@@ -19,22 +19,6 @@ export async function DELETE(
       );
     }
 
-    // Demo mode handling
-    if (
-      process.env.NODE_ENV === "development" ||
-      searchParams.get("demo") === "true"
-    ) {
-      // Simulate successful cancellation
-      return NextResponse.json({
-        success: true,
-        message: "Demo order cancelled successfully",
-        orderId,
-        status: "cancelled",
-        cancelledAt: Math.floor(Date.now() / 1000),
-        hash: `0x${Math.random().toString(16).substr(2, 64)}`,
-      });
-    }
-
     // Production 1inch API integration
     const API_KEY = process.env.ONEINCH_API_KEY;
     if (!API_KEY) {

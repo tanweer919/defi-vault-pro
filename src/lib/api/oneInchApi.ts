@@ -173,7 +173,7 @@ class OneInchApiService {
         `/limit-orders/${chainId}/${address}`,
         {
           params: {
-            demo: process.env.NODE_ENV === "development" ? "true" : "false",
+            demo: "false",
           },
         },
       );

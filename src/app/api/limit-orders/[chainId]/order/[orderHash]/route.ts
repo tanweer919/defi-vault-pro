@@ -10,29 +10,6 @@ export async function GET(
   try {
     const { chainId, orderHash } = await params;
 
-    // Demo mode handling
-    if (process.env.NODE_ENV === "development") {
-      const mockOrder = {
-        id: orderHash,
-        orderId: orderHash,
-        maker: "0x1234567890123456789012345678901234567890",
-        makerAsset: "0x0000000000000000000000000000000000000000",
-        takerAsset: "0xA0b86a33E6441E5BA2AD8D73B8E76C6B72C2E6eF",
-        makingAmount: "1000000000000000000",
-        takingAmount: "3200000000",
-        salt: Date.now().toString(),
-        status: "active",
-        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        filledAmount: "0",
-        remainingAmount: "1000000000000000000",
-        chainId: parseInt(chainId),
-        signature: `0x${"0".repeat(130)}`,
-      };
-
-      return NextResponse.json(mockOrder);
-    }
-
     // Production 1inch API integration
     const API_KEY = process.env.ONEINCH_API_KEY;
     if (!API_KEY) {

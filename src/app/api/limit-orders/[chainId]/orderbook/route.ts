@@ -83,19 +83,6 @@ export async function GET(
       );
     }
 
-    // Validate that the token pair exists in our active pairs
-    if (!demo && !isValidTokenPair(baseToken, quoteToken)) {
-      const examplePairs = getPopularTokenPairs().slice(0, 5);
-      return NextResponse.json(
-        {
-          error: `Invalid token pair: ${baseToken}/${quoteToken}. This pair is not supported by 1inch limit orders.`,
-          suggestion: "Please use valid token addresses from supported pairs.",
-          examplePairs: examplePairs,
-        },
-        { status: 400 },
-      );
-    }
-
     if (demo) {
       // Return mock orderbook for demo mode with enhanced animations
       const basePrice = 3000;
@@ -195,16 +182,9 @@ export async function GET(
         },
       });
 
-      const ordersData = response.data;
+      const orderBookData = response.data;
 
-      // Transform the orders data into orderbook format
-      const orderbook = transformOrdersToOrderbook(
-        ordersData,
-        baseToken,
-        quoteToken,
-      );
-
-      return NextResponse.json(orderbook);
+      return NextResponse.json(orderBookData);
     } catch (apiError) {
       console.error("1inch API error:", apiError);
       // Fall back to demo data if API fails

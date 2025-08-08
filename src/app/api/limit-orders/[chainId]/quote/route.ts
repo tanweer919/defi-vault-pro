@@ -22,26 +22,6 @@ export async function GET(
       );
     }
 
-    // Demo mode handling
-    if (process.env.NODE_ENV === "development") {
-      // Simple calculation for demo (in reality this would be much more complex)
-      const takingAmountNum = parseFloat(takingAmount);
-      const mockPrice = 3200; // Mock ETH/USDC price
-      const makingAmountCalculated = (takingAmountNum / mockPrice).toString();
-
-      const mockQuote = {
-        makerAsset,
-        takerAsset,
-        takingAmount,
-        makingAmount: makingAmountCalculated,
-        price: mockPrice.toString(),
-        estimatedGas: "150000",
-        fees: "0.1",
-      };
-
-      return NextResponse.json(mockQuote);
-    }
-
     // Production 1inch API integration
     const API_KEY = process.env.ONEINCH_API_KEY;
     if (!API_KEY) {

@@ -67,7 +67,7 @@ export async function GET(
     }
 
     // In production, this would call the actual 1inch API
-    const apiUrl = `https://api.1inch.io/v5.2/${chainId}/limit-order/all`;
+    const apiUrl = `https://api.1inch.dev/v5.2/${chainId}/limit-order/all`;
     const queryParams = new URLSearchParams({
       page,
       limit,

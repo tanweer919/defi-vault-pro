@@ -35,10 +35,7 @@ export async function GET(
     const maker = searchParams.get("maker");
 
     // Demo mode - return stored demo orders
-    if (
-      process.env.NODE_ENV === "development" ||
-      searchParams.get("demo") === "true"
-    ) {
+    if (searchParams.get("demo") === "true") {
       const orders = Array.from(demoOrders.values())
         .filter((order) => order.chainId === parseInt(chainId))
         .filter(
@@ -58,7 +55,9 @@ export async function GET(
       );
     }
 
-    const url = new URL(`${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/orders`);
+    const url = new URL(
+      `${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/address/${maker}`,
+    );
     if (maker) {
       url.searchParams.set("maker", maker);
     }
@@ -119,7 +118,7 @@ export async function POST(
     }
 
     // Demo mode handling
-    if (process.env.NODE_ENV === "development" || orderData.demo) {
+    if (orderData.demo) {
       const orderId = `demo_${Date.now()}_${Math.random()
         .toString(36)
         .substr(2, 9)}`;
