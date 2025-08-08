@@ -339,7 +339,13 @@ const TokenSelect: React.FC<TokenSelectProps> = ({
   );
 };
 
-export const LimitOrderInterface: React.FC = () => {
+interface LimitOrderInterfaceProps {
+  onTokenPairChange?: (baseToken: string, quoteToken: string) => void;
+}
+
+export const LimitOrderInterface: React.FC<LimitOrderInterfaceProps> = ({
+  onTokenPairChange,
+}) => {
   const [sellToken, setSellToken] = useState("");
   const [buyToken, setBuyToken] = useState("");
   const [sellAmount, setSellAmount] = useState("");
@@ -392,6 +398,36 @@ export const LimitOrderInterface: React.FC = () => {
 
   const availableTokens = TOKENS[chainId as keyof typeof TOKENS] || TOKENS[1];
 
+  // Initialize default tokens on mount to trigger initial order book load
+  useEffect(() => {
+    if (!sellToken && !buyToken && availableTokens.length > 0) {
+      // Set default tokens: Pay with USDT to buy ETH/WETH
+      const ethToken = availableTokens.find(
+        (t) => t.symbol === "ETH" || t.symbol === "WETH",
+      );
+      const usdtToken = availableTokens.find((t) => t.symbol === "USDT");
+
+      if (ethToken && usdtToken) {
+        // For buy order: pay with USDT, receive ETH
+        setSellToken(usdtToken.address); // Pay with
+        setBuyToken(ethToken.address); // Receive
+      } else {
+        // Fallback: try WETH and USDC
+        const wethToken = availableTokens.find((t) => t.symbol === "WETH");
+        const usdcToken = availableTokens.find((t) => t.symbol === "USDC");
+
+        if (wethToken && usdcToken) {
+          setSellToken(usdcToken.address); // Pay with USDC
+          setBuyToken(wethToken.address); // Receive WETH
+        } else if (availableTokens.length >= 2) {
+          // Final fallback to first two available tokens
+          setSellToken(availableTokens[1].address); // Second token as "pay with"
+          setBuyToken(availableTokens[0].address); // First token as "receive"
+        }
+      }
+    }
+  }, [availableTokens, sellToken, buyToken]);
+
   // Auto-calculate buy amount based on target price
   useEffect(() => {
     if (sellAmount && targetPrice) {
@@ -399,6 +435,20 @@ export const LimitOrderInterface: React.FC = () => {
       // For now, we'll just trigger a re-render when these values change
     }
   }, [sellAmount, targetPrice]);
+
+  // Notify parent about token pair changes for order book updates
+  useEffect(() => {
+    if (sellToken && buyToken && onTokenPairChange) {
+      // In a trading context, typically the first token is "base" and second is "quote"
+      // For buy orders: buying baseToken with quoteToken
+      // For sell orders: selling baseToken for quoteToken
+      if (orderType === "buy") {
+        onTokenPairChange(buyToken, sellToken); // base=what we're buying, quote=what we're paying with
+      } else {
+        onTokenPairChange(sellToken, buyToken); // base=what we're selling, quote=what we're getting
+      }
+    }
+  }, [sellToken, buyToken, orderType, onTokenPairChange]);
 
   // Get suggested price from 1inch
   const getSuggestedPrice = async () => {

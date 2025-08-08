@@ -12,7 +12,6 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const demo = searchParams.get("demo") === "true";
 
-
     // Production 1inch API integration
     const API_KEY = process.env.ONEINCH_API_KEY;
     if (!API_KEY) {
@@ -22,7 +21,9 @@ export async function GET(
       );
     }
 
-    const url = new URL(`${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/orders`);
+    const url = new URL(
+      `${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/address/${address}`,
+    );
     url.searchParams.set("maker", address);
 
     const response = await axios.get(url.toString(), {

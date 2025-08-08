@@ -12,6 +12,14 @@ import { Plus, List, TrendingUp } from "lucide-react";
 export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState("create");
 
+  // State for tracking selected token pair from LimitOrderInterface
+  const [selectedBaseToken, setSelectedBaseToken] = useState<string>(
+    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+  ); // WETH (what we're buying) default
+  const [selectedQuoteToken, setSelectedQuoteToken] = useState<string>(
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+  ); // USDT (what we're paying with) default
+
   // Default chain for the order book
   const defaultChainId = 1; // Ethereum mainnet
 
@@ -56,7 +64,14 @@ export default function OrdersPage() {
       {/* Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          {activeTab === "create" && <LimitOrderInterface />}
+          {activeTab === "create" && (
+            <LimitOrderInterface
+              onTokenPairChange={(baseToken: string, quoteToken: string) => {
+                setSelectedBaseToken(baseToken);
+                setSelectedQuoteToken(quoteToken);
+              }}
+            />
+          )}
           {activeTab === "active" && <ActiveOrders />}
           {activeTab === "history" && (
             <Card className="p-6" gradient>
@@ -72,6 +87,8 @@ export default function OrdersPage() {
         <div className="lg:col-span-1">
           <RealTimeOrderBook
             chainId={defaultChainId}
+            baseToken={selectedBaseToken}
+            quoteToken={selectedQuoteToken}
             className="h-fit sticky top-6"
           />
         </div>

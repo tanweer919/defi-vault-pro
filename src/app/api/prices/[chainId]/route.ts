@@ -33,7 +33,6 @@ export async function GET(
   } catch (error: unknown) {
     console.error("Price API error:", error);
 
-
     return NextResponse.json(
       { error: "Failed to fetch prices" },
       { status: 500 },
@@ -75,7 +74,6 @@ export async function POST(
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error("Price API error:", error);
-
 
     return NextResponse.json(
       { error: "Failed to fetch prices" },

@@ -10,7 +10,6 @@ export async function GET(
   try {
     const { chainId } = await params;
 
-
     // Production 1inch API integration
     const API_KEY = process.env.ONEINCH_API_KEY;
     if (!API_KEY) {
@@ -21,7 +20,7 @@ export async function GET(
     }
 
     const response = await axios.get(
-      `${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/active-orders-pairs`,
+      `${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/unique-active-pairs`,
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,

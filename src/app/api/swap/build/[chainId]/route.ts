@@ -76,7 +76,6 @@ export async function POST(
   } catch (error: unknown) {
     console.error("Build swap transaction API error:", error);
 
-
     return NextResponse.json(
       { error: "Failed to build swap transaction" },
       { status: 500 },

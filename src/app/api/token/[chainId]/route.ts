@@ -13,7 +13,7 @@ export async function GET(
     if (address) {
       // Get specific token metadata
       const response = await axios.get(
-        `https://api.1inch.dev/token/v1.2/${chainId}/metadata?address=${address}`,
+        `https://api.1inch.dev/token/v1.4/${chainId}/custom/${address}`,
         {
           headers: {
             Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
@@ -41,7 +41,6 @@ export async function GET(
     }
   } catch (error: unknown) {
     console.error("Token API error:", error);
-
 
     return NextResponse.json(
       { error: "Failed to fetch token data" },

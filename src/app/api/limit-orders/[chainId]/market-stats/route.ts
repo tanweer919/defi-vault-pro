@@ -102,7 +102,7 @@ export async function GET(
     }
 
     // In production, this would call the actual 1inch API
-    const apiUrl = `https://api.1inch.io/v5.2/${chainId}/limit-order/market-stats`;
+    const apiUrl = `https://api.1inch.dev/v5.2/${chainId}/limit-order/market-stats`;
     const queryParams = new URLSearchParams();
 
     if (baseToken && quoteToken) {
@@ -117,6 +117,8 @@ export async function GET(
       },
     });
 
+    if (!response.data) {
+      throw new Error("No data received from API");
     }
 
     const data = response.data;

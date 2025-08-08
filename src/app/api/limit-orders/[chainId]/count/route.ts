@@ -11,7 +11,6 @@ export async function GET(
     const { chainId } = await params;
     const { searchParams } = new URL(request.url);
 
-
     // Production 1inch API integration
     const API_KEY = process.env.ONEINCH_API_KEY;
     if (!API_KEY) {
@@ -21,9 +20,7 @@ export async function GET(
       );
     }
 
-    const url = new URL(
-      `${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/orders/count`,
-    );
+    const url = new URL(`${ONEINCH_API_BASE}/orderbook/v4.0/${chainId}/count`);
 
     // Add query parameters from request
     searchParams.forEach((value, key) => {

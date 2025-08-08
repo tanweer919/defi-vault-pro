@@ -10,7 +10,6 @@ export async function GET(
   try {
     const { chainId, orderHash } = await params;
 
-
     // Production 1inch API integration
     const API_KEY = process.env.ONEINCH_API_KEY;
     if (!API_KEY) {

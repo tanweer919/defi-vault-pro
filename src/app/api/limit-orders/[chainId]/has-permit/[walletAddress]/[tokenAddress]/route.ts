@@ -105,7 +105,7 @@ export async function GET(
     }
 
     // In production, this would call the actual 1inch API
-    const apiUrl = `https://api.1inch.io/v5.2/${chainId}/limit-order/has-permit/${walletAddress}/${tokenAddress}`;
+    const apiUrl = `https://api.1inch.dev/v5.2/${chainId}/limit-order/has-permit/${walletAddress}/${tokenAddress}`;
 
     const response = await axios.get(apiUrl, {
       headers: {
@@ -114,6 +114,8 @@ export async function GET(
       },
     });
 
+    if (!response.data) {
+      throw new Error("No data received from API");
     }
 
     const data = response.data;
